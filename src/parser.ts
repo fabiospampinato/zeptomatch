@@ -2,10 +2,15 @@
 /* IMPORT */
 
 import {rule, parse} from './peg';
-import {memoize} from './utils';
+import {memoize, splitWith} from './utils';
 import type {Rule} from './peg';
 
 /* HELPERS */
+
+//TODO: Write this properly, once parser combinators are implemented in the peg library, these regexes for 1 level of nesting got a bit out of control
+
+const SPLIT_BY_COMMA_RE = /(?:^(?=,)|\\.|\{[^}]*\}|[@*+?!]\([^)]*\)|\[[^\]]*\]|[^,]|(?<=,)$)+/g;
+const SPLIT_BY_PIPE_RE = /(?:^(?=\|)|\\.|\{[^}]*\}|[@*+?!]\([^)]*\)|\[[^\]]*\]|[^\|]|(?<=\|)$)+/g;
 
 const GLOB_ESCAPE_GRAMMAR = [
   /* ESCAPED */
@@ -35,15 +40,15 @@ const GLOB_NORMALIZE_GRAMMAR = [
 
 const GLOB_PARSE_GRAMMAR = [
   /* EXTENDED - ONE */
-  rule ( /@\(([^)]*)\)/, glob => `${parseGlob ( glob )}(?!${parseGlob ( glob )})` ),
+  rule ( /@\(((?:\\.|\{[^}]*\}|[@*+?!]\([^)]*\)|\[[^\]]*\]|[^)])*)\)/, glob => `${parseSplitGlob ( glob, SPLIT_BY_PIPE_RE )}(?!${parseSplitGlob ( glob, SPLIT_BY_PIPE_RE )})` ),
   /* EXTENDED - STAR */
-  rule ( /\*\(([^)]*)\)/, glob => `(?:${parseGlob ( glob )})*` ),
+  rule ( /\*\(((?:\\.|\{[^}]*\}|[@*+?!]\([^)]*\)|\[[^\]]*\]|[^)])*)\)/, glob => `(?:${parseSplitGlob ( glob, SPLIT_BY_PIPE_RE )})*` ),
   /* EXTENDED - PLUS */
-  rule ( /\+\(([^)]*)\)/, glob => `(?:${parseGlob ( glob )})+` ),
+  rule ( /\+\(((?:\\.|\{[^}]*\}|[@*+?!]\([^)]*\)|\[[^\]]*\]|[^)])*)\)/, glob => `(?:${parseSplitGlob ( glob, SPLIT_BY_PIPE_RE )})+` ),
   /* EXTENDED - QUESTION */
-  rule ( /\?\(([^)]*)\)/, glob => `(?:${parseGlob ( glob )})?` ),
+  rule ( /\?\(((?:\\.|\{[^}]*\}|[@*+?!]\([^)]*\)|\[[^\]]*\]|[^)])*)\)/, glob => `(?:${parseSplitGlob ( glob, SPLIT_BY_PIPE_RE )})?` ),
   /* EXTENDED - NEGATION */
-  rule ( /!\(([^)]*)\)/, glob => `(?!${parseGlob ( glob )}).*?` ),
+  rule ( /!\(((?:\\.|\{[^}]*\}|[@*+?!]\([^)]*\)|\[[^\]]*\]|[^)])*)\)/, glob => `(?!${parseSplitGlob ( glob, SPLIT_BY_PIPE_RE )}).*?` ),
   /* NEGATION NEGATION */
   rule ( /^(!!)+/, '' ),
   /* NEGATION */
@@ -61,7 +66,9 @@ const GLOB_PARSE_GRAMMAR = [
   /* CLASS */
   rule ( /\[([!^]?)([^\]]*)\]/, ( negation, chars ) => `[${negation && '^/'}${parseEscape ( chars )}]` ),
   /* BRACES */
-  rule ( /\{([^\}]*)\}/, alternations => `(?:${alternations.split ( /(?<!\\),/g ).map ( parseGlob ).join ( '|' )})` ), //TODO: Support nesting (matching+splitting) //TODO: No lookbehinds!
+  rule ( /\{((?:\\.|\{[^}]*\}|[@*+?!]\([^)]*\)|\[[^\]]*\]|[^}])*)\}/, alternations => `(?:${parseSplitGlob ( alternations, SPLIT_BY_COMMA_RE )})` ),
+  //URL: https://regex101.com/r/UVxqkv/1
+  //URL: https://regex101.com/r/j8ZmA3/1
   /* ESCAPE */
   ...GLOB_ESCAPE_GRAMMAR
 ];
@@ -91,6 +98,12 @@ const parseGlob = memoize (( glob: string ): string => {
   return parseWith ( parseNormalize ( glob ), GLOB_PARSE_GRAMMAR );
 
 });
+
+const parseSplitGlob = ( input: string, split: RegExp ): string => {
+
+  return splitWith ( input, split ).map ( parseGlob ).join ( '|' );
+
+};
 
 /* EXPORT */
 

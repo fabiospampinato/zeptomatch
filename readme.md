@@ -33,15 +33,18 @@ Additional features and details:
 - Zeptomatch automatically normalizes path separators, since matching Windows-style paths would most likely be a mistake.
 - Zeptomatch supports compiling a glob to a standalone regular expression.
 - Zeptomatch doesn't do anything special for file names starting with a dot.
-- Zeptomatch has very limited support for nesting syntax. //TODO
 
-Missing features:
+Limitations:
 
-//TODO: posix classes
-//TODO: modifiers on classes
-//TODO: backet ranges
-//TODO: nesting
-//TODO: Anything other than matching
+- POSIX classes (e.g. `[:alnum:]`) are not supported. Implementing them doesn't seems unnecessary for a "zepto" library.
+- Braces (e.g. `{foo,bar}`) can only be nested inside other braces at most once.
+- Extglobs (e.g. `@(foo)`) can only be nested inside other extglobs at most once.
+- The current implementation relies on regex lookbehinds, with haven't shipped in Safari yet.
+- Anything other than yes/no maching and compiling to a regular expression is not supported.
+
+Potentially the annoying limitations could be lifted in a future iteration of the library, if needed.
+
+//TODO: Support alternations
 
 ## Install
 

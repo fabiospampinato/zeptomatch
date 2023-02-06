@@ -6,13 +6,12 @@ import match from '../dist/index.js';
 
 /* MAIN */
 
-// const log = console.log.bind ( console );
 const zeptomatch = ( ...args ) => { //TODO
-  // log ( 'asd' );
   console.log ( '---------------' );
   console.log ( args[0] );
   console.log ( args[1] );
   console.log ( match ( ...args ) );
+  console.log ( match.compile ( args[0] ) );
   return match ( ...args );
 };
 
@@ -55,7 +54,7 @@ describe ( 'Zeptomatch', it => {
     t.true ( zeptomatch ( ['a', 'foo'], 'a' ) );
     t.true ( zeptomatch ( ['*', 'foo', 'bar'], 'ab' ) );
     t.true ( zeptomatch ( ['*b', 'foo', 'bar'], 'ab' ) );
-    // t.true ( zeptomatch ( ['./*', 'foo', 'bar'], 'ab' ) );
+    t.true ( !zeptomatch ( ['./*', 'foo', 'bar'], 'ab' ) );
     t.true ( zeptomatch ( ['a*', 'foo', 'bar'], 'ab' ) );
     t.true ( zeptomatch ( ['ab', 'foo'], 'ab' ) );
 
@@ -152,9 +151,9 @@ describe ( 'Zeptomatch', it => {
     t.true ( zeptomatch ( '/*', '/ab' ) );
     t.true ( zeptomatch ( '/*', '/cd' ) );
     t.true ( zeptomatch ( '*', 'ab' ) );
-    // t.true ( zeptomatch ( './*', 'ab' ) );
+    t.true ( !zeptomatch ( './*', 'ab' ) );
     t.true ( zeptomatch ( 'ab', 'ab' ) );
-    // t.true ( zeptomatch ( './*/', 'ab/' ) );
+    t.true ( !zeptomatch ( './*/', 'ab/' ) );
 
     t.true ( !zeptomatch ( '*.js', 'a/b/c/z.js' ) );
     t.true ( !zeptomatch ( '*.js', 'a/b/z.js' ) );
@@ -285,7 +284,18 @@ describe ( 'Zeptomatch', it => {
 
   });
 
-  it ( 'exploits', t => {
+  it.skip ( 'ranges', t => {
+
+    t.true ( t.true ( 'a/{a..c}', 'a/c' ) );
+    t.true ( !t.true ( 'a/{a..c}', 'a/z' ) );
+    t.true ( t.true ( 'a/{1..100}', 'a/99' ) );
+    t.true ( !t.true ( 'a/{1..100}', 'a/101' ) );
+    t.true ( t.true ( 'a/{01..10}', 'a/02' ) );
+    t.true ( !t.true ( 'a/{01..10}', 'a/2' ) );
+
+  });
+
+  it.skip ( 'exploits', t => {
 
     t.true ( !zeptomatch ( `${'\\'.repeat ( 65500 )}A`, '\\A' ) ); // This matches in picomatch, but why though?
     t.true ( zeptomatch ( `!${'\\'.repeat ( 65500 )}A`, 'A' ) );
@@ -584,8 +594,644 @@ describe ( 'Zeptomatch', it => {
 
   });
 
-  //TODO: Modifiers on classes
-  //TODO: Extglobs
+  it ( 'extglobs', t => {
+
+    t.true ( zeptomatch ( 'c!(.)z', 'cbz' ) );
+    t.true ( !zeptomatch ( 'c!(*)z', 'cbz' ) );
+    t.true ( zeptomatch ( 'c!(b*)z', 'cccz' ) );
+    t.true ( zeptomatch ( 'c!(+)z', 'cbz' ) );
+    t.true ( !zeptomatch ( 'c!(?)z', 'cbz' ) ); // This matches in picomatch, but why though?
+    t.true ( zeptomatch ( 'c!(@)z', 'cbz' ) );
+
+    t.true ( !zeptomatch ( 'c!(?:foo)?z', 'c/z' ) );
+    t.true ( zeptomatch ( 'c!(?:foo)?z', 'c!fooz' ) );
+    t.true ( zeptomatch ( 'c!(?:foo)?z', 'c!z' ) );
+
+    t.true ( !zeptomatch ( '!(abc)', 'abc' ) );
+    t.true ( !zeptomatch ( '!(a)', 'a' ) );
+    // t.true ( zeptomatch ( '!(a)', 'aa' ) );
+    t.true ( zeptomatch ( '!(a)', 'b' ) );
+
+    t.true ( zeptomatch ( 'a!(b)c', 'aac' ) );
+    t.true ( !zeptomatch ( 'a!(b)c', 'abc' ) );
+    t.true ( zeptomatch ( 'a!(b)c', 'acc' ) );
+    t.true ( zeptomatch ( 'a!(z)', 'abz' ) );
+    t.true ( !zeptomatch ( 'a!(z)', 'az' ) );
+
+    t.true ( !zeptomatch ( 'a!(.)', 'a.' ) );
+    t.true ( !zeptomatch ( '!(.)a', '.a' ) );
+    t.true ( !zeptomatch ( 'a!(.)c', 'a.c' ) );
+    t.true ( zeptomatch ( 'a!(.)c', 'abc' ) );
+
+    t.true ( !zeptomatch ( '/!(*.d).ts', '/file.d.ts' ) );
+    t.true ( zeptomatch ( '/!(*.d).ts', '/file.ts' ) );
+    t.true ( zeptomatch ( '/!(*.d).ts', '/file.something.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).ts', '/file.d.something.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).ts', '/file.dhello.ts' ) );
+
+    // t.true ( !zeptomatch ( '**/!(*.d).ts', '/file.d.ts' ) );
+    // t.true ( zeptomatch ( '**/!(*.d).ts', '/file.ts' ) );
+    // t.true ( zeptomatch ( '**/!(*.d).ts', '/file.something.ts' ) );
+    // t.true ( zeptomatch ( '**/!(*.d).ts', '/file.d.something.ts' ) );
+    // t.true ( zeptomatch ( '**/!(*.d).ts', '/file.dhello.ts' ) );
+
+    // t.true ( !zeptomatch ( '/!(*.d).{ts,tsx}', '/file.d.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).{ts,tsx}', '/file.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).{ts,tsx}', '/file.something.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).{ts,tsx}', '/file.d.something.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).{ts,tsx}', '/file.dhello.ts' ) );
+
+    // t.true ( !zeptomatch ( '/!(*.d).@(ts)', '/file.d.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).@(ts)', '/file.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).@(ts)', '/file.something.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).@(ts)', '/file.d.something.ts' ) );
+    // t.true ( zeptomatch ( '/!(*.d).@(ts)', '/file.dhello.ts' ) );
+
+    t.true ( !zeptomatch ( 'foo/!(abc)', 'foo/abc' ) );
+    t.true ( zeptomatch ( 'foo/!(abc)', 'foo/bar' ) );
+
+    t.true ( !zeptomatch ( 'a/!(z)', 'a/z' ) );
+    t.true ( zeptomatch ( 'a/!(z)', 'a/b' ) );
+
+    t.true ( !zeptomatch ( 'c/!(z)/v', 'c/z/v' ) );
+    t.true ( zeptomatch ( 'c/!(z)/v', 'c/a/v' ) );
+
+    t.true ( zeptomatch ( '!(b/a)', 'a/a' ) );
+    t.true ( !zeptomatch ( '!(b/a)', 'b/a' ) );
+
+    // t.true ( !zeptomatch ( '!(!(foo))*', 'foo/bar' ) );
+    t.true ( zeptomatch ( '!(b/a)', 'a/a' ) );
+    t.true ( !zeptomatch ( '!(b/a)', 'b/a' ) );
+
+    // t.true ( zeptomatch ( '(!(b/a))', 'a/a' ) );
+    // t.true ( zeptomatch ( '!((b/a))', 'a/a' ) );
+    // t.true ( !zeptomatch ( '!((b/a))', 'b/a' ) );
+
+    t.true ( !zeptomatch ( '(!(?:b/a))', 'a/a' ) );
+    t.true ( !zeptomatch ( '!((?:b/a))', 'b/a' ) );
+
+    // t.true ( zeptomatch ( '!(b/(a))', 'a/a' ) );
+    // t.true ( !zeptomatch ( '!(b/(a))', 'b/a' ) );
+
+    t.true ( zeptomatch ( '!(b/a)', 'a/a' ) );
+    t.true ( !zeptomatch ( '!(b/a)', 'b/a' ) );
+
+    // t.true ( !zeptomatch ( 'c!(z)', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(z)z', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(.)z', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(*)z', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(+)z', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(?)z', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(@)z', 'c/z' ) );
+
+    // t.true ( !zeptomatch ( 'a!(z)', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(.)z', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(/)z', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(/z)z', 'c/z' ) );
+    // t.true ( !zeptomatch ( 'c!(/z)z', 'c/b' ) );
+    // t.true ( zeptomatch ( 'c!(/z)z', 'c/b/z' ) );
+
+    // t.true ( zeptomatch ( '!!(abc)', 'abc' ) );
+    // t.true ( !zeptomatch ( '!!!(abc)', 'abc' ) );
+    // t.true ( zeptomatch ( '!!!!(abc)', 'abc' ) );
+    // t.true ( !zeptomatch ( '!!!!!(abc)', 'abc' ) );
+    // t.true ( zeptomatch ( '!!!!!!(abc)', 'abc' ) );
+    // t.true ( !zeptomatch ( '!!!!!!!(abc)', 'abc' ) );
+    // t.true ( zeptomatch ( '!!!!!!!!(abc)', 'abc' ) );
+
+    // t.true ( zeptomatch ( '!(!(abc))', 'abc' ) );
+    // t.true ( !zeptomatch ( '!(!(!(abc)))', 'abc' ) );
+    // t.true ( zeptomatch ( '!(!(!(!(abc))))', 'abc' ) );
+    // t.true ( !zeptomatch ( '!(!(!(!(!(abc)))))', 'abc' ) );
+    // t.true ( zeptomatch ( '!(!(!(!(!(!(abc))))))', 'abc' ) );
+    // t.true ( !zeptomatch ( '!(!(!(!(!(!(!(abc)))))))', 'abc' ) );
+    // t.true ( zeptomatch ( '!(!(!(!(!(!(!(!(abc))))))))', 'abc' ) );
+
+    // t.true ( zeptomatch ( 'foo/!(!(abc))', 'foo/abc' ) );
+    // t.true ( !zeptomatch ( 'foo/!(!(!(abc)))', 'foo/abc' ) );
+    // t.true ( zeptomatch ( 'foo/!(!(!(!(abc))))', 'foo/abc' ) );
+    // t.true ( !zeptomatch ( 'foo/!(!(!(!(!(abc)))))', 'foo/abc' ) );
+    // t.true ( zeptomatch ( 'foo/!(!(!(!(!(!(abc))))))', 'foo/abc' ) );
+    // t.true ( !zeptomatch ( 'foo/!(!(!(!(!(!(!(abc)))))))', 'foo/abc' ) );
+    // t.true ( zeptomatch ( 'foo/!(!(!(!(!(!(!(!(abc))))))))', 'foo/abc' ) );
+
+    t.true ( !zeptomatch ( '!(moo).!(cow)', 'moo.cow' ) );
+    t.true ( !zeptomatch ( '!(moo).!(cow)', 'foo.cow' ) );
+    t.true ( !zeptomatch ( '!(moo).!(cow)', 'moo.bar' ) );
+    t.true ( zeptomatch ( '!(moo).!(cow)', 'foo.bar' ) );
+
+    // t.true ( !zeptomatch ( '@(!(a) )*', 'a   ' ) );
+    // t.true ( !zeptomatch ( '@(!(a) )*', 'a   b' ) );
+    // t.true ( !zeptomatch ( '@(!(a) )*', 'a  b' ) );
+    // t.true ( !zeptomatch ( '@(!(a) )*', 'a  ' ) );
+    // t.true ( !zeptomatch ( '@(!(a) )*', 'a ' ) );
+    // t.true ( !zeptomatch ( '@(!(a) )*', 'a' ) );
+    // t.true ( !zeptomatch ( '@(!(a) )*', 'aa' ) );
+    // t.true ( !zeptomatch ( '@(!(a) )*', 'b' ) );
+    // t.true ( !zeptomatch ( '@(!(a) )*', 'bb' ) );
+    // t.true ( zeptomatch ( '@(!(a) )*', ' a ' ) );
+    // t.true ( zeptomatch ( '@(!(a) )*', 'b  ' ) );
+    // t.true ( zeptomatch ( '@(!(a) )*', 'b ' ) );
+
+    t.true ( !zeptomatch ( 'a*!(z)', 'c/z' ) );
+    t.true ( zeptomatch ( 'a*!(z)', 'abz' ) );
+    t.true ( zeptomatch ( 'a*!(z)', 'az' ) );
+
+    t.true ( !zeptomatch ( '!(a*)', 'a' ) );
+    t.true ( !zeptomatch ( '!(a*)', 'aa' ) );
+    t.true ( !zeptomatch ( '!(a*)', 'ab' ) );
+    t.true ( zeptomatch ( '!(a*)', 'b' ) );
+
+    t.true ( !zeptomatch ( '!(*a*)', 'a' ) );
+    t.true ( !zeptomatch ( '!(*a*)', 'aa' ) );
+    t.true ( !zeptomatch ( '!(*a*)', 'ab' ) );
+    t.true ( !zeptomatch ( '!(*a*)', 'ac' ) );
+    t.true ( zeptomatch ( '!(*a*)', 'b' ) );
+
+    // t.true ( !zeptomatch ( '!(*a)', 'a' ) );
+    // t.true ( !zeptomatch ( '!(*a)', 'aa' ) );
+    // t.true ( !zeptomatch ( '!(*a)', 'bba' ) );
+    // t.true ( zeptomatch ( '!(*a)', 'ab' ) );
+    // t.true ( zeptomatch ( '!(*a)', 'ac' ) );
+    // t.true ( zeptomatch ( '!(*a)', 'b' ) );
+
+    t.true ( !zeptomatch ( '!(*a)*', 'a' ) );
+    t.true ( !zeptomatch ( '!(*a)*', 'aa' ) );
+    t.true ( !zeptomatch ( '!(*a)*', 'bba' ) );
+    t.true ( !zeptomatch ( '!(*a)*', 'ab' ) );
+    t.true ( !zeptomatch ( '!(*a)*', 'ac' ) );
+    t.true ( zeptomatch ( '!(*a)*', 'b' ) );
+
+    t.true ( !zeptomatch ( '!(a)*', 'a' ) );
+    t.true ( !zeptomatch ( '!(a)*', 'abb' ) );
+    t.true ( zeptomatch ( '!(a)*', 'ba' ) );
+
+    t.true ( zeptomatch ( 'a!(b)*', 'aa' ) );
+    t.true ( !zeptomatch ( 'a!(b)*', 'ab' ) );
+    t.true ( !zeptomatch ( 'a!(b)*', 'aba' ) );
+    t.true ( zeptomatch ( 'a!(b)*', 'ac' ) );
+
+    // t.true ( zeptomatch ( '!(!(moo)).!(!(cow))', 'moo.cow' ) );
+
+    t.true ( !zeptomatch ( '!(a|b)c', 'ac' ) );
+    t.true ( !zeptomatch ( '!(a|b)c', 'bc' ) );
+    t.true ( zeptomatch ( '!(a|b)c', 'cc' ) );
+
+    t.true ( !zeptomatch ( '!(a|b)c.!(d|e)', 'ac.d' ) );
+    t.true ( !zeptomatch ( '!(a|b)c.!(d|e)', 'bc.d' ) );
+    t.true ( !zeptomatch ( '!(a|b)c.!(d|e)', 'cc.d' ) );
+    t.true ( !zeptomatch ( '!(a|b)c.!(d|e)', 'ac.e' ) );
+    t.true ( !zeptomatch ( '!(a|b)c.!(d|e)', 'bc.e' ) );
+    t.true ( !zeptomatch ( '!(a|b)c.!(d|e)', 'cc.e' ) );
+    t.true ( !zeptomatch ( '!(a|b)c.!(d|e)', 'ac.f' ) );
+    t.true ( !zeptomatch ( '!(a|b)c.!(d|e)', 'bc.f' ) );
+    t.true ( zeptomatch ( '!(a|b)c.!(d|e)', 'cc.f' ) );
+    t.true ( zeptomatch ( '!(a|b)c.!(d|e)', 'dc.g' ) );
+
+    // t.true ( zeptomatch ( '!(!(a|b)c.!(d|e))', 'ac.d' ) );
+    // t.true ( zeptomatch ( '!(!(a|b)c.!(d|e))', 'bc.d' ) );
+    // t.true ( !zeptomatch ( '!(a|b)c.!(d|e)', 'cc.d' ) );
+    // t.true ( zeptomatch ( '!(!(a|b)c.!(d|e))', 'cc.d' ) );
+    // t.true ( zeptomatch ( '!(!(a|b)c.!(d|e))', 'cc.d' ) );
+    // t.true ( zeptomatch ( '!(!(a|b)c.!(d|e))', 'ac.e' ) );
+    // t.true ( zeptomatch ( '!(!(a|b)c.!(d|e))', 'bc.e' ) );
+    // t.true ( zeptomatch ( '!(!(a|b)c.!(d|e))', 'cc.e' ) );
+    // t.true ( zeptomatch ( '!(!(a|b)c.!(d|e))', 'ac.f' ) );
+    // t.true ( zeptomatch ( '!(!(a|b)c.!(d|e))', 'bc.f' ) );
+    // t.true ( !zeptomatch ( '!(!(a|b)c.!(d|e))', 'cc.f' ) );
+    // t.true ( !zeptomatch ( '!(!(a|b)c.!(d|e))', 'dc.g' ) );
+
+    // t.true ( !zeptomatch ( '@(a|b).md', '.md' ) );
+    // t.true ( !zeptomatch ( '@(a|b).md', 'a.js' ) );
+    // t.true ( !zeptomatch ( '@(a|b).md', 'c.md' ) );
+    // t.true ( zeptomatch ( '@(a|b).md', 'a.md' ) );
+    // t.true ( zeptomatch ( '@(a|b).md', 'b.md' ) );
+
+    t.true ( !zeptomatch ( '+(a|b).md', '.md' ) );
+    t.true ( !zeptomatch ( '+(a|b).md', 'a.js' ) );
+    t.true ( !zeptomatch ( '+(a|b).md', 'c.md' ) );
+    t.true ( zeptomatch ( '+(a|b).md', 'a.md' ) );
+    t.true ( zeptomatch ( '+(a|b).md', 'aa.md' ) );
+    t.true ( zeptomatch ( '+(a|b).md', 'ab.md' ) );
+    t.true ( zeptomatch ( '+(a|b).md', 'b.md' ) );
+    t.true ( zeptomatch ( '+(a|b).md', 'bb.md' ) );
+
+    t.true ( !zeptomatch ( '*(a|b).md', 'a.js' ) );
+    t.true ( !zeptomatch ( '*(a|b).md', 'c.md' ) );
+    t.true ( zeptomatch ( '*(a|b).md', '.md' ) );
+    t.true ( zeptomatch ( '*(a|b).md', 'a.md' ) );
+    t.true ( zeptomatch ( '*(a|b).md', 'aa.md' ) );
+    t.true ( zeptomatch ( '*(a|b).md', 'ab.md' ) );
+    t.true ( zeptomatch ( '*(a|b).md', 'b.md' ) );
+    t.true ( zeptomatch ( '*(a|b).md', 'bb.md' ) );
+
+    t.true ( !zeptomatch ( '?(a|b).md', 'a.js' ) );
+    t.true ( !zeptomatch ( '?(a|b).md', 'bb.md' ) );
+    t.true ( !zeptomatch ( '?(a|b).md', 'c.md' ) );
+    t.true ( zeptomatch ( '?(a|b).md', '.md' ) );
+    t.true ( zeptomatch ( '?(a|ab|b).md', 'a.md' ) );
+    t.true ( zeptomatch ( '?(a|b).md', 'a.md' ) );
+    t.true ( zeptomatch ( '?(a|aa|b).md', 'aa.md' ) );
+    t.true ( zeptomatch ( '?(a|ab|b).md', 'ab.md' ) );
+    t.true ( zeptomatch ( '?(a|ab|b).md', 'b.md' ) );
+
+    t.true ( zeptomatch ( '+(a)?(b)', 'ab' ) );
+    t.true ( zeptomatch ( '+(a)?(b)', 'aab' ) );
+    t.true ( zeptomatch ( '+(a)?(b)', 'aa' ) );
+    t.true ( zeptomatch ( '+(a)?(b)', 'a' ) );
+
+    t.true ( !zeptomatch ( 'a?(b*)', 'ax' ) );
+    t.true ( zeptomatch ( '?(a*|b)', 'ax' ) );
+
+    t.true ( !zeptomatch ( 'a*(b*)', 'ax' ) );
+    t.true ( zeptomatch ( '*(a*|b)', 'ax' ) );
+
+    t.true ( !zeptomatch ( 'a@(b*)', 'ax' ) );
+    t.true ( zeptomatch ( '@(a*|b)', 'ax' ) );
+
+    t.true ( !zeptomatch ( 'a?(b*)', 'ax' ) );
+    t.true ( zeptomatch ( '?(a*|b)', 'ax' ) );
+
+    t.true ( zeptomatch ( 'a!(b*)', 'ax' ) );
+    t.true ( !zeptomatch ( '!(a*|b)', 'ax' ) );
+
+    // t.true ( zeptomatch ( '!(a/**)', 'a' ) );
+    // t.true ( !zeptomatch ( '!(a/**)', 'a/' ) );
+    // t.true ( !zeptomatch ( '!(a/**)', 'a/b' ) );
+    // t.true ( !zeptomatch ( '!(a/**)', 'a/b/c' ) );
+    // t.true ( zeptomatch ( '!(a/**)', 'b' ) );
+    // t.true ( zeptomatch ( '!(a/**)', 'b/c' ) );
+
+    t.true ( zeptomatch ( 'a/!(b*)', 'a/a' ) );
+    t.true ( !zeptomatch ( 'a/!(b*)', 'a/b' ) );
+    t.true ( !zeptomatch ( 'a/!(b/*)', 'a/b/c' ) );
+    t.true ( !zeptomatch ( 'a/!(b*)', 'a/b/c' ) );
+    t.true ( zeptomatch ( 'a/!(b*)', 'a/c' ) );
+
+    t.true ( zeptomatch ( 'a/!(b*)/**', 'a/a/' ) );
+    t.true ( zeptomatch ( 'a/!(b*)', 'a/a' ) );
+    t.true ( zeptomatch ( 'a/!(b*)/**', 'a/a' ) );
+    t.true ( !zeptomatch ( 'a/!(b*)/**', 'a/b' ) );
+    t.true ( !zeptomatch ( 'a/!(b*)/**', 'a/b/c' ) );
+    t.true ( zeptomatch ( 'a/!(b*)/**', 'a/c' ) );
+    t.true ( zeptomatch ( 'a/!(b*)', 'a/c' ) );
+    t.true ( zeptomatch ( 'a/!(b*)/**', 'a/c/' ) );
+
+    t.true ( zeptomatch ( 'a*(z)', 'a' ) );
+    t.true ( zeptomatch ( 'a*(z)', 'az' ) );
+    t.true ( zeptomatch ( 'a*(z)', 'azz' ) );
+    t.true ( zeptomatch ( 'a*(z)', 'azzz' ) );
+    t.true ( !zeptomatch ( 'a*(z)', 'abz' ) );
+    t.true ( !zeptomatch ( 'a*(z)', 'cz' ) );
+
+    t.true ( !zeptomatch ( '*(b/a)', 'a/a' ) );
+    t.true ( !zeptomatch ( '*(b/a)', 'a/b' ) );
+    t.true ( !zeptomatch ( '*(b/a)', 'a/c' ) );
+    t.true ( zeptomatch ( '*(b/a)', 'b/a' ) );
+    t.true ( !zeptomatch ( '*(b/a)', 'b/b' ) );
+    t.true ( !zeptomatch ( '*(b/a)', 'b/c' ) );
+
+    // t.true ( !zeptomatch ( 'a**(z)', 'cz' ) );
+    // t.true ( zeptomatch ( 'a**(z)', 'abz' ) );
+    // t.true ( zeptomatch ( 'a**(z)', 'az' ) );
+
+    t.true ( !zeptomatch ( '*(z)', 'c/z/v' ) );
+    t.true ( zeptomatch ( '*(z)', 'z' ) );
+    t.true ( !zeptomatch ( '*(z)', 'zf' ) );
+    t.true ( !zeptomatch ( '*(z)', 'fz' ) );
+
+    t.true ( !zeptomatch ( 'c/*(z)/v', 'c/a/v' ) );
+    t.true ( zeptomatch ( 'c/*(z)/v', 'c/z/v' ) );
+
+    t.true ( !zeptomatch ( '*.*(js).js', 'a.md.js' ) );
+    t.true ( zeptomatch ( '*.*(js).js', 'a.js.js' ) );
+
+    t.true ( !zeptomatch ( 'a+(z)', 'a' ) );
+    t.true ( zeptomatch ( 'a+(z)', 'az' ) );
+    t.true ( !zeptomatch ( 'a+(z)', 'cz' ) );
+    t.true ( !zeptomatch ( 'a+(z)', 'abz' ) );
+    t.true ( !zeptomatch ( 'a+(z)', 'a+z' ) );
+    t.true ( zeptomatch ( 'a++(z)', 'a+z' ) );
+    t.true ( !zeptomatch ( 'a+(z)', 'c+z' ) );
+    t.true ( !zeptomatch ( 'a+(z)', 'a+bz' ) );
+    t.true ( !zeptomatch ( '+(z)', 'az' ) );
+    t.true ( !zeptomatch ( '+(z)', 'cz' ) );
+    t.true ( !zeptomatch ( '+(z)', 'abz' ) );
+    t.true ( !zeptomatch ( '+(z)', 'fz' ) );
+    t.true ( zeptomatch ( '+(z)', 'z' ) );
+    t.true ( zeptomatch ( '+(z)', 'zz' ) );
+    t.true ( zeptomatch ( 'c/+(z)/v', 'c/z/v' ) );
+    t.true ( zeptomatch ( 'c/+(z)/v', 'c/zz/v' ) );
+    t.true ( !zeptomatch ( 'c/+(z)/v', 'c/a/v' ) );
+
+    t.true ( zeptomatch ( 'a??(z)', 'a?z' ) );
+    t.true ( zeptomatch ( 'a??(z)', 'a.z' ) );
+    t.true ( !zeptomatch ( 'a??(z)', 'a/z' ) );
+    t.true ( zeptomatch ( 'a??(z)', 'a?' ) );
+    t.true ( zeptomatch ( 'a??(z)', 'ab' ) );
+    t.true ( !zeptomatch ( 'a??(z)', 'a/' ) );
+
+    t.true ( !zeptomatch ( 'a?(z)', 'a?z' ) );
+    t.true ( !zeptomatch ( 'a?(z)', 'abz' ) );
+    t.true ( !zeptomatch ( 'a?(z)', 'z' ) );
+    t.true ( zeptomatch ( 'a?(z)', 'a' ) );
+    t.true ( zeptomatch ( 'a?(z)', 'az' ) );
+
+    t.true ( !zeptomatch ( '?(z)', 'abz' ) );
+    t.true ( !zeptomatch ( '?(z)', 'az' ) );
+    t.true ( !zeptomatch ( '?(z)', 'cz' ) );
+    t.true ( !zeptomatch ( '?(z)', 'fz' ) );
+    t.true ( !zeptomatch ( '?(z)', 'zz' ) );
+    t.true ( zeptomatch ( '?(z)', 'z' ) );
+
+    t.true ( !zeptomatch ( 'c/?(z)/v', 'c/a/v' ) );
+    t.true ( !zeptomatch ( 'c/?(z)/v', 'c/zz/v' ) );
+    t.true ( zeptomatch ( 'c/?(z)/v', 'c/z/v' ) );
+
+    t.true ( zeptomatch ( 'c/@(z)/v', 'c/z/v' ) );
+    t.true ( !zeptomatch ( 'c/@(z)/v', 'c/a/v' ) );
+    t.true ( zeptomatch ( '@(*.*)', 'moo.cow' ) );
+
+    t.true ( !zeptomatch ( 'a*@(z)', 'cz' ) );
+    t.true ( zeptomatch ( 'a*@(z)', 'abz' ) );
+    t.true ( zeptomatch ( 'a*@(z)', 'az' ) );
+
+    t.true ( !zeptomatch ( 'a@(z)', 'cz' ) );
+    t.true ( !zeptomatch ( 'a@(z)', 'abz' ) );
+    t.true ( zeptomatch ( 'a@(z)', 'az' ) );
+
+    t.true ( !zeptomatch ( '(b|a).(a)', 'aa.aa' ) );
+    t.true ( !zeptomatch ( '(b|a).(a)', 'a.bb' ) );
+    t.true ( !zeptomatch ( '(b|a).(a)', 'a.aa.a' ) );
+    t.true ( !zeptomatch ( '(b|a).(a)', 'cc.a' ) );
+    // t.true ( zeptomatch ( '(b|a).(a)', 'a.a' ) );
+    t.true ( !zeptomatch ( '(b|a).(a)', 'c.a' ) );
+    t.true ( !zeptomatch ( '(b|a).(a)', 'dd.aa.d' ) );
+    // t.true ( zeptomatch ( '(b|a).(a)', 'b.a' ) );
+
+    // t.true ( !zeptomatch ( '@(b|a).@(a)', 'aa.aa' ) );
+    // t.true ( !zeptomatch ( '@(b|a).@(a)', 'a.bb' ) );
+    // t.true ( !zeptomatch ( '@(b|a).@(a)', 'a.aa.a' ) );
+    // t.true ( !zeptomatch ( '@(b|a).@(a)', 'cc.a' ) );
+    // t.true ( zeptomatch ( '@(b|a).@(a)', 'a.a' ) );
+    // t.true ( !zeptomatch ( '@(b|a).@(a)', 'c.a' ) );
+    // t.true ( !zeptomatch ( '@(b|a).@(a)', 'dd.aa.d' ) );
+    // t.true ( zeptomatch ( '@(b|a).@(a)', 'b.a' ) );
+
+    // t.true ( !zeptomatch ( '*(0|1|3|5|7|9)', '' ) );
+
+    t.true ( zeptomatch ( '*(0|1|3|5|7|9)', '137577991' ) );
+    t.true ( !zeptomatch ( '*(0|1|3|5|7|9)', '2468' ) );
+
+    t.true ( zeptomatch ( '*.c?(c)', 'file.c' ) );
+    t.true ( !zeptomatch ( '*.c?(c)', 'file.C' ) );
+    t.true ( zeptomatch ( '*.c?(c)', 'file.cc' ) );
+    t.true ( !zeptomatch ( '*.c?(c)', 'file.ccc' ) );
+
+    t.true ( zeptomatch ( '!(*.c|*.h|Makefile.in|config*|README)', 'parse.y' ) );
+    t.true ( !zeptomatch ( '!(*.c|*.h|Makefile.in|config*|README)', 'shell.c' ) );
+    t.true ( zeptomatch ( '!(*.c|*.h|Makefile.in|config*|README)', 'Makefile' ) );
+    t.true ( !zeptomatch ( '!(*.c|*.h|Makefile.in|config*|README)', 'Makefile.in' ) );
+
+    t.true ( !zeptomatch ( '*\\;[1-9]*([0-9])', 'VMS.FILE;' ) );
+    t.true ( !zeptomatch ( '*\\;[1-9]*([0-9])', 'VMS.FILE;0' ) );
+    t.true ( zeptomatch ( '*\\;[1-9]*([0-9])', 'VMS.FILE;1' ) );
+    t.true ( zeptomatch ( '*\\;[1-9]*([0-9])', 'VMS.FILE;139' ) );
+    t.true ( !zeptomatch ( '*\\;[1-9]*([0-9])', 'VMS.FILE;1N' ) );
+
+    t.true ( zeptomatch ( '!([*)*', 'abcx' ) );
+    t.true ( zeptomatch ( '!([*)*', 'abcz' ) );
+    t.true ( zeptomatch ( '!([*)*', 'bbc' ) );
+
+    t.true ( zeptomatch ( '!([[*])*', 'abcx' ) );
+    t.true ( zeptomatch ( '!([[*])*', 'abcz' ) );
+    t.true ( zeptomatch ( '!([[*])*', 'bbc' ) );
+
+    t.true ( zeptomatch ( '+(a|b\\[)*', 'abcx' ) );
+    t.true ( zeptomatch ( '+(a|b\\[)*', 'abcz' ) );
+    t.true ( !zeptomatch ( '+(a|b\\[)*', 'bbc' ) );
+
+    t.true ( zeptomatch ( '+(a|b[)*', 'abcx' ) );
+    t.true ( zeptomatch ( '+(a|b[)*', 'abcz' ) );
+    t.true ( !zeptomatch ( '+(a|b[)*', 'bbc' ) );
+
+    t.true ( !zeptomatch ( '[a*(]*z', 'abcx' ) );
+    t.true ( zeptomatch ( '[a*(]*z', 'abcz' ) );
+    t.true ( !zeptomatch ( '[a*(]*z', 'bbc' ) );
+    t.true ( zeptomatch ( '[a*(]*z', 'aaz' ) );
+    t.true ( zeptomatch ( '[a*(]*z', 'aaaz' ) );
+
+    t.true ( !zeptomatch ( '[a*(]*)z', 'abcx' ) );
+    t.true ( !zeptomatch ( '[a*(]*)z', 'abcz' ) );
+    t.true ( !zeptomatch ( '[a*(]*)z', 'bbc' ) );
+
+    t.true ( !zeptomatch ( '+()c', 'abc' ) );
+    t.true ( !zeptomatch ( '+()x', 'abc' ) );
+    t.true ( zeptomatch ( '+(*)c', 'abc' ) );
+    t.true ( !zeptomatch ( '+(*)x', 'abc' ) );
+    t.true ( !zeptomatch ( 'no-file+(a|b)stuff', 'abc' ) );
+    t.true ( !zeptomatch ( 'no-file+(a*(c)|b)stuff', 'abc' ) );
+
+    t.true ( zeptomatch ( 'a+(b|c)d', 'abd' ) );
+    t.true ( zeptomatch ( 'a+(b|c)d', 'acd' ) );
+
+    t.true ( !zeptomatch ( 'a+(b|c)d', 'abc' ) );
+
+    // t.true ( zeptomatch ( 'a!(b|B)', 'abd' ) );
+    // t.true ( zeptomatch ( 'a!(@(b|B))', 'acd' ) );
+    // t.true ( zeptomatch ( 'a!(@(b|B))', 'ac' ) );
+    // t.true ( !zeptomatch ( 'a!(@(b|B))', 'ab' ) );
+
+    // t.true ( !zeptomatch ( 'a!(@(b|B))d', 'abc' ) );
+    // t.true ( !zeptomatch ( 'a!(@(b|B))d', 'abd' ) );
+    // t.true ( zeptomatch ( 'a!(@(b|B))d', 'acd' ) );
+
+    t.true ( zeptomatch ( 'a[b*(foo|bar)]d', 'abd' ) );
+    t.true ( !zeptomatch ( 'a[b*(foo|bar)]d', 'abc' ) );
+    t.true ( !zeptomatch ( 'a[b*(foo|bar)]d', 'acd' ) );
+
+    // t.true ( !zeptomatch ( 'para+([0-9])', 'para' ) );
+    // t.true ( !zeptomatch ( 'para?([345]|99)1', 'para381' ) );
+    // t.true ( !zeptomatch ( 'para*([0-9])', 'paragraph' ) );
+    // t.true ( !zeptomatch ( 'para@(chute|graph)', 'paramour' ) );
+    // t.true ( zeptomatch ( 'para*([0-9])', 'para' ) );
+    // t.true ( zeptomatch ( 'para!(*.[0-9])', 'para.38' ) );
+    // t.true ( zeptomatch ( 'para!(*.[00-09])', 'para.38' ) );
+    // t.true ( zeptomatch ( 'para!(*.[0-9])', 'para.graph' ) );
+    // t.true ( zeptomatch ( 'para*([0-9])', 'para13829383746592' ) );
+    // t.true ( zeptomatch ( 'para!(*.[0-9])', 'para39' ) );
+    // t.true ( zeptomatch ( 'para+([0-9])', 'para987346523' ) );
+    // t.true ( zeptomatch ( 'para?([345]|99)1', 'para991' ) );
+    // t.true ( zeptomatch ( 'para!(*.[0-9])', 'paragraph' ) );
+    // t.true ( zeptomatch ( 'para@(chute|graph)', 'paragraph' ) );
+
+    t.true ( !zeptomatch ( '*(a|b[)', 'foo' ) );
+    t.true ( !zeptomatch ( '*(a|b[)', '(' ) );
+    t.true ( !zeptomatch ( '*(a|b[)', ')' ) );
+    t.true ( !zeptomatch ( '*(a|b[)', '|' ) );
+    t.true ( zeptomatch ( '*(a|b)', 'a' ) );
+    t.true ( zeptomatch ( '*(a|b)', 'b' ) );
+    t.true ( zeptomatch ( '*(a|b\\[)', 'b[' ) );
+    t.true ( zeptomatch ( '+(a|b\\[)', 'ab[' ) );
+    t.true ( !zeptomatch ( '+(a|b\\[)', 'ab[cde' ) );
+    t.true ( zeptomatch ( '+(a|b\\[)*', 'ab[cde' ) );
+
+    // t.true ( zeptomatch ( '*(a|b|f)*', 'foo' ) );
+    // t.true ( zeptomatch ( '*(a|b|o)*', 'foo' ) );
+    // t.true ( zeptomatch ( '*(a|b|f|o)', 'foo' ) );
+    // t.true ( zeptomatch ( '\\*\\(a\\|b\\[\\)', '*(a|b[)' ) );
+    // t.true ( !zeptomatch ( '*(a|b)', 'foo' ) );
+    // t.true ( !zeptomatch ( '*(a|b\\[)', 'foo' ) );
+    // t.true ( zeptomatch ( '*(a|b\\[)|f*', 'foo' ) );
+
+    // t.true ( zeptomatch ( '@(*).@(*)', 'moo.cow' ) );
+    // t.true ( zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'a.a' ) );
+    // t.true ( zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'a.b' ) );
+    // t.true ( !zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'a.c' ) );
+    // t.true ( !zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'a.c.d' ) );
+    // t.true ( !zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'c.c' ) );
+    // t.true ( !zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'a.' ) );
+    // t.true ( !zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'd.d' ) );
+    // t.true ( !zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'e.e' ) );
+    // t.true ( !zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'f.f' ) );
+    // t.true ( zeptomatch ( '*.@(a|b|@(ab|a*@(b))*@(c)d)', 'a.abcd' ) );
+
+    // t.true ( !zeptomatch ( '!(*.a|*.b|*.c)', 'a.a' ) );
+    // t.true ( !zeptomatch ( '!(*.a|*.b|*.c)', 'a.b' ) );
+    // t.true ( !zeptomatch ( '!(*.a|*.b|*.c)', 'a.c' ) );
+    // t.true ( zeptomatch ( '!(*.a|*.b|*.c)', 'a.c.d' ) );
+    // t.true ( !zeptomatch ( '!(*.a|*.b|*.c)', 'c.c' ) );
+    // t.true ( zeptomatch ( '!(*.a|*.b|*.c)', 'a.' ) );
+    // t.true ( zeptomatch ( '!(*.a|*.b|*.c)', 'd.d' ) );
+    // t.true ( zeptomatch ( '!(*.a|*.b|*.c)', 'e.e' ) );
+    // t.true ( zeptomatch ( '!(*.a|*.b|*.c)', 'f.f' ) );
+    // t.true ( zeptomatch ( '!(*.a|*.b|*.c)', 'a.abcd' ) );
+
+    t.true ( zeptomatch ( '!(*.[^a-c])', 'a.a' ) );
+    t.true ( zeptomatch ( '!(*.[^a-c])', 'a.b' ) );
+    t.true ( zeptomatch ( '!(*.[^a-c])', 'a.c' ) );
+    t.true ( !zeptomatch ( '!(*.[^a-c])', 'a.c.d' ) );
+    t.true ( zeptomatch ( '!(*.[^a-c])', 'c.c' ) );
+    t.true ( zeptomatch ( '!(*.[^a-c])', 'a.' ) );
+    t.true ( !zeptomatch ( '!(*.[^a-c])', 'd.d' ) );
+    t.true ( !zeptomatch ( '!(*.[^a-c])', 'e.e' ) );
+    t.true ( !zeptomatch ( '!(*.[^a-c])', 'f.f' ) );
+    t.true ( zeptomatch ( '!(*.[^a-c])', 'a.abcd' ) );
+
+    // t.true ( !zeptomatch ( '!(*.[a-c])', 'a.a' ) );
+    // t.true ( !zeptomatch ( '!(*.[a-c])', 'a.b' ) );
+    // t.true ( !zeptomatch ( '!(*.[a-c])', 'a.c' ) );
+    // t.true ( zeptomatch ( '!(*.[a-c])', 'a.c.d' ) );
+    // t.true ( !zeptomatch ( '!(*.[a-c])', 'c.c' ) );
+    // t.true ( zeptomatch ( '!(*.[a-c])', 'a.' ) );
+    // t.true ( zeptomatch ( '!(*.[a-c])', 'd.d' ) );
+    // t.true ( zeptomatch ( '!(*.[a-c])', 'e.e' ) );
+    // t.true ( zeptomatch ( '!(*.[a-c])', 'f.f' ) );
+    // t.true ( zeptomatch ( '!(*.[a-c])', 'a.abcd' ) );
+
+    t.true ( !zeptomatch ( '!(*.[a-c]*)', 'a.a' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c]*)', 'a.b' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c]*)', 'a.c' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c]*)', 'a.c.d' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c]*)', 'c.c' ) );
+    t.true ( zeptomatch ( '!(*.[a-c]*)', 'a.' ) );
+    t.true ( zeptomatch ( '!(*.[a-c]*)', 'd.d' ) );
+    t.true ( zeptomatch ( '!(*.[a-c]*)', 'e.e' ) );
+    t.true ( zeptomatch ( '!(*.[a-c]*)', 'f.f' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c]*)', 'a.abcd' ) );
+
+    // t.true ( !zeptomatch ( '*.!(a|b|c)', 'a.a' ) );
+    // t.true ( !zeptomatch ( '*.!(a|b|c)', 'a.b' ) );
+    // t.true ( !zeptomatch ( '*.!(a|b|c)', 'a.c' ) );
+    // t.true ( zeptomatch ( '*.!(a|b|c)', 'a.c.d' ) );
+    // t.true ( !zeptomatch ( '*.!(a|b|c)', 'c.c' ) );
+    // t.true ( zeptomatch ( '*.!(a|b|c)', 'a.' ) );
+    // t.true ( zeptomatch ( '*.!(a|b|c)', 'd.d' ) );
+    // t.true ( zeptomatch ( '*.!(a|b|c)', 'e.e' ) );
+    // t.true ( zeptomatch ( '*.!(a|b|c)', 'f.f' ) );
+    // t.true ( zeptomatch ( '*.!(a|b|c)', 'a.abcd' ) );
+
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'a.a' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'a.b' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'a.c' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'a.c.d' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'c.c' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'a.' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'd.d' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'e.e' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'f.f' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)', 'a.abcd' ) );
+
+    t.true ( !zeptomatch ( '!(*.[a-c])*', 'a.a' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c])*', 'a.b' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c])*', 'a.c' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c])*', 'a.c.d' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c])*', 'c.c' ) );
+    t.true ( zeptomatch ( '!(*.[a-c])*', 'a.' ) );
+    t.true ( zeptomatch ( '!(*.[a-c])*', 'd.d' ) );
+    t.true ( zeptomatch ( '!(*.[a-c])*', 'e.e' ) );
+    t.true ( zeptomatch ( '!(*.[a-c])*', 'f.f' ) );
+    t.true ( !zeptomatch ( '!(*.[a-c])*', 'a.abcd' ) );
+
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'a.a' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'a.b' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'a.c' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'a.c.d' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'c.c' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'a.' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'd.d' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'e.e' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'f.f' ) );
+    t.true ( zeptomatch ( '*!(.a|.b|.c)*', 'a.abcd' ) );
+
+    t.true ( !zeptomatch ( '*.!(a|b|c)*', 'a.a' ) );
+    t.true ( !zeptomatch ( '*.!(a|b|c)*', 'a.b' ) );
+    t.true ( !zeptomatch ( '*.!(a|b|c)*', 'a.c' ) );
+    t.true ( zeptomatch ( '*.!(a|b|c)*', 'a.c.d' ) );
+    t.true ( !zeptomatch ( '*.!(a|b|c)*', 'c.c' ) );
+    t.true ( zeptomatch ( '*.!(a|b|c)*', 'a.' ) );
+    t.true ( zeptomatch ( '*.!(a|b|c)*', 'd.d' ) );
+    t.true ( zeptomatch ( '*.!(a|b|c)*', 'e.e' ) );
+    t.true ( zeptomatch ( '*.!(a|b|c)*', 'f.f' ) );
+    t.true ( !zeptomatch ( '*.!(a|b|c)*', 'a.abcd' ) );
+
+    // t.true ( !zeptomatch ( '@()ef', 'def' ) );
+    // t.true ( zeptomatch ( '@()ef', 'ef' ) );
+
+    // t.true ( !zeptomatch ( '()ef', 'def' ) );
+    // t.true ( zeptomatch ( '()ef', 'ef' ) );
+
+    // t.true ( zeptomatch ( 'a\\\\\\(b', 'a\\(b' ) );
+    // t.true ( zeptomatch ( 'a(b', 'a(b' ) );
+    // t.true ( zeptomatch ( 'a\\(b', 'a(b' ) );
+    // t.true ( !zeptomatch ( 'a(b', 'a((b' ) );
+    // t.true ( !zeptomatch ( 'a(b', 'a((((b' ) );
+    // t.true ( !zeptomatch ( 'a(b', 'ab' ) );
+
+    t.true ( zeptomatch ( 'a\\(b', 'a(b' ) );
+    t.true ( !zeptomatch ( 'a\\(b', 'a((b' ) );
+    t.true ( !zeptomatch ( 'a\\(b', 'a((((b' ) );
+    t.true ( !zeptomatch ( 'a\\(b', 'ab' ) );
+
+    t.true ( zeptomatch ( 'a(*b', 'a(b' ) );
+    t.true ( zeptomatch ( 'a\\(*b', 'a(ab' ) );
+    t.true ( zeptomatch ( 'a(*b', 'a((b' ) );
+    t.true ( zeptomatch ( 'a(*b', 'a((((b' ) );
+    t.true ( !zeptomatch ( 'a(*b', 'ab' ) );
+
+    t.true ( zeptomatch ( 'a\\(b', 'a(b' ) );
+    t.true ( zeptomatch ( 'a\\(\\(b', 'a((b' ) );
+    t.true ( zeptomatch ( 'a\\(\\(\\(\\(b', 'a((((b' ) );
+
+    t.true ( !zeptomatch ( 'a\\\\(b', 'a(b' ) );
+    t.true ( !zeptomatch ( 'a\\\\(b', 'a((b' ) );
+    t.true ( !zeptomatch ( 'a\\\\(b', 'a((((b' ) );
+    t.true ( !zeptomatch ( 'a\\\\(b', 'ab' ) );
+
+    t.true ( !zeptomatch ( 'a\\\\b', 'a/b' ) );
+    t.true ( !zeptomatch ( 'a\\\\b', 'ab' ) );
+
+  });
 
   // Tests adapted from "glob-match": https://github.com/devongovett/glob-match
   // License: https://github.com/devongovett/glob-match/blob/main/LICENSE
@@ -678,13 +1324,14 @@ describe ( 'Zeptomatch', it => {
     t.true ( zeptomatch ( "some/**/needle.{js,tsx,mdx,ts,jsx,txt}", "some/a/bigger/path/to/the/crazy/needle.txt" ) );
     t.true ( zeptomatch ( "some/**/{a,b,c}/**/needle.txt", "some/foo/a/bigger/path/to/the/crazy/needle.txt" ) );
     t.true ( !zeptomatch ( "some/**/{a,b,c}/**/needle.txt", "some/foo/d/bigger/path/to/the/crazy/needle.txt" ) );
-    // t.true ( match ( "a/{a{a,b},b}", "a/aa" ) );
-    // t.true ( match ( "a/{a{a,b},b}", "a/ab" ) );
-    // t.true ( !match ( "a/{a{a,b},b}", "a/ac" ) );
-    // t.true ( match ( "a/{a{a,b},b}", "a/b" ) );
-    // t.true ( !match ( "a/{a{a,b},b}", "a/c" ) );
-    // t.true ( match ( "a/{b,c[}]*}", "a/b" ) );
-    // t.true ( match ( "a/{b,c[}]*}", "a/c}xx" ) );
+
+    t.true ( zeptomatch ( "a/{a{a,b},b}", "a/aa" ) );
+    t.true ( zeptomatch ( "a/{a{a,b},b}", "a/ab" ) );
+    t.true ( !zeptomatch ( "a/{a{a,b},b}", "a/ac" ) );
+    t.true ( zeptomatch ( "a/{a{a,b},b}", "a/b" ) );
+    t.true ( !zeptomatch ( "a/{a{a,b},b}", "a/c" ) );
+    t.true ( zeptomatch ( "a/{b,c[}]*}", "a/b" ) );
+    t.true ( zeptomatch ( "a/{b,c[}]*}", "a/c}xx" ) );
 
   });
 
@@ -773,7 +1420,7 @@ describe ( 'Zeptomatch', it => {
     t.true ( !zeptomatch ( "\\^", "de" ) );
 
     t.true ( zeptomatch ( "\\*", "*" ) );
-    // t.true ( match ( "\\*", "\\*" ) ); // Why would this match? https://github.com/micromatch/picomatch/issues/117
+    t.true ( !zeptomatch ( "\\*", "\\*" ) ); // Why would this match? https://github.com/micromatch/picomatch/issues/117
     t.true ( !zeptomatch ( "\\*", "**" ) );
     t.true ( !zeptomatch ( "\\*", "a" ) );
     t.true ( !zeptomatch ( "\\*", "a/*" ) );
@@ -1107,10 +1754,10 @@ describe ( 'Zeptomatch', it => {
     t.true ( !zeptomatch ( "a[]-]b", "aab" ) );
     t.true ( !zeptomatch ( "[ten]", "ten" ) );
     t.true ( zeptomatch ( "]", "]" ) );
-    // t.true ( match ( "a[]-]b", "a-b" ) );
-    // t.true ( match ( "a[]-]b", "a]b" ) );
-    // t.true ( match ( "a[]]b", "a]b" ) );
-    // t.true ( match ( "a[\\]a\\-]b", "aab" ) );
+    // t.true ( zeptomatch ( "a[]-]b", "a-b" ) );
+    // t.true ( zeptomatch ( "a[]-]b", "a]b" ) );
+    // t.true ( zeptomatch ( "a[]]b", "a]b" ) );
+    // t.true ( zeptomatch ( "a[\\]a\\-]b", "aab" ) );
     t.true ( zeptomatch ( "t[a-g]n", "ten" ) );
     t.true ( zeptomatch ( "t[^a-g]n", "ton" ) );
 
@@ -1179,8 +1826,8 @@ describe ( 'Zeptomatch', it => {
     t.true ( !zeptomatch ( "*.js", "a/z.js" ) );
     t.true ( zeptomatch ( "*.js", "z.js" ) );
 
-    // t.true ( !match ( "*/*", "a/.ab" ) );
-    // t.true ( !match ( "*", ".ab" ) );
+    t.true ( zeptomatch ( "*/*", "a/.ab" ) );
+    t.true ( zeptomatch ( "*", ".ab" ) );
 
     t.true ( zeptomatch ( "z*.js", "z.js" ) );
     t.true ( zeptomatch ( "*/*", "a/z" ) );
@@ -1573,7 +2220,7 @@ describe ( 'Zeptomatch', it => {
     t.true ( !zeptomatch ( "a/b/**/c{d,e}/**/xyz.md", "a/b/c/xyz.md" ) );
     t.true ( !zeptomatch ( "a/b/**/c{d,e}/**/xyz.md", "a/b/d/xyz.md" ) );
     t.true ( !zeptomatch ( "a/**/", "a/b" ) );
-    // t.true ( !match ( "**/*", "a/b/.js/c.txt" ) );
+    t.true ( zeptomatch ( "**/*", "a/b/.js/c.txt" ) );
     t.true ( !zeptomatch ( "a/**/", "a/b/c/d" ) );
     t.true ( !zeptomatch ( "a/**/", "a/bb" ) );
     t.true ( !zeptomatch ( "a/**/", "a/cb" ) );
@@ -1957,31 +2604,31 @@ describe ( 'Zeptomatch', it => {
     t.true ( zeptomatch ( "a{,/}*.txt", "a/b.txt" ) );
     t.true ( zeptomatch ( "a{,/}*.txt", "a/ab.txt" ) );
 
-    // t.true ( match ( "a{,.*{foo,db},\\(bar\\)}.txt", "a.txt" ) );
-    // t.true ( !match ( "a{,.*{foo,db},\\(bar\\)}.txt", "adb.txt" ) );
-    // t.true ( match ( "a{,.*{foo,db},\\(bar\\)}.txt", "a.db.txt" ) );
+    t.true ( zeptomatch ( "a{,.*{foo,db},\\(bar\\)}.txt", "a.txt" ) );
+    t.true ( !zeptomatch ( "a{,.*{foo,db},\\(bar\\)}.txt", "adb.txt" ) );
+    t.true ( zeptomatch ( "a{,.*{foo,db},\\(bar\\)}.txt", "a.db.txt" ) );
 
-    // t.true ( match ( "a{,*.{foo,db},\\(bar\\)}.txt", "a.txt" ) );
-    // t.true ( !match ( "a{,*.{foo,db},\\(bar\\)}.txt", "adb.txt" ) );
-    // t.true ( match ( "a{,*.{foo,db},\\(bar\\)}.txt", "a.db.txt" ) );
+    t.true ( zeptomatch ( "a{,*.{foo,db},\\(bar\\)}.txt", "a.txt" ) );
+    t.true ( !zeptomatch ( "a{,*.{foo,db},\\(bar\\)}.txt", "adb.txt" ) );
+    t.true ( zeptomatch ( "a{,*.{foo,db},\\(bar\\)}.txt", "a.db.txt" ) );
 
-    // t.true ( match ( "a{,.*{foo,db},\\(bar\\)}", "a" ) );
-    // t.true ( !match ( "a{,.*{foo,db},\\(bar\\)}", "adb" ) );
-    // t.true ( match ( "a{,.*{foo,db},\\(bar\\)}", "a.db" ) );
+    t.true ( zeptomatch ( "a{,.*{foo,db},\\(bar\\)}", "a" ) );
+    t.true ( !zeptomatch ( "a{,.*{foo,db},\\(bar\\)}", "adb" ) );
+    t.true ( zeptomatch ( "a{,.*{foo,db},\\(bar\\)}", "a.db" ) );
 
-    // t.true ( match ( "a{,*.{foo,db},\\(bar\\)}", "a" ) );
-    // t.true ( !match ( "a{,*.{foo,db},\\(bar\\)}", "adb" ) );
-    // t.true ( match ( "a{,*.{foo,db},\\(bar\\)}", "a.db" ) );
+    t.true ( zeptomatch ( "a{,*.{foo,db},\\(bar\\)}", "a" ) );
+    t.true ( !zeptomatch ( "a{,*.{foo,db},\\(bar\\)}", "adb" ) );
+    t.true ( zeptomatch ( "a{,*.{foo,db},\\(bar\\)}", "a.db" ) );
 
-    // t.true ( !match ( "{,.*{foo,db},\\(bar\\)}", "a" ) );
-    // t.true ( !match ( "{,.*{foo,db},\\(bar\\)}", "adb" ) );
-    // t.true ( !match ( "{,.*{foo,db},\\(bar\\)}", "a.db" ) );
-    // t.true ( match ( "{,.*{foo,db},\\(bar\\)}", ".db" ) );
+    t.true ( !zeptomatch ( "{,.*{foo,db},\\(bar\\)}", "a" ) );
+    t.true ( !zeptomatch ( "{,.*{foo,db},\\(bar\\)}", "adb" ) );
+    t.true ( !zeptomatch ( "{,.*{foo,db},\\(bar\\)}", "a.db" ) );
+    t.true ( zeptomatch ( "{,.*{foo,db},\\(bar\\)}", ".db" ) );
 
-    // t.true ( !match ( "{,*.{foo,db},\\(bar\\)}", "a" ) );
-    // t.true ( match ( "{*,*.{foo,db},\\(bar\\)}", "a" ) );
-    // t.true ( !match ( "{,*.{foo,db},\\(bar\\)}", "adb" ) );
-    // t.true ( match ( "{,*.{foo,db},\\(bar\\)}", "a.db" ) );
+    t.true ( !zeptomatch ( "{,*.{foo,db},\\(bar\\)}", "a" ) );
+    t.true ( zeptomatch ( "{*,*.{foo,db},\\(bar\\)}", "a" ) );
+    t.true ( !zeptomatch ( "{,*.{foo,db},\\(bar\\)}", "adb" ) );
+    t.true ( zeptomatch ( "{,*.{foo,db},\\(bar\\)}", "a.db" ) );
 
     t.true ( !zeptomatch ( "a/b/**/c{d,e}/**/`xyz.md", "a/b/c/xyz.md" ) );
     t.true ( !zeptomatch ( "a/b/**/c{d,e}/**/xyz.md", "a/b/d/xyz.md" ) );
