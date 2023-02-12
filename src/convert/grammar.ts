@@ -12,6 +12,29 @@ const Escaped = match ( /\\./, identity );
 const Escape = match ( /[$.*+?^(){}[\]\|]/, char => `\\${char}` );
 const Passthrough = match ( /./, identity );
 
+// const ExtglobEscape = match ( /[$.*+?^({}[\]]/, char => `\\${char}` );
+// const ExtglobPassthrough = match ( /[^)]/, identity );
+// const ExtglobValue = lazy ( () => or ([ StarStar, Star, Question, Class, Range, Braces, Escaped, ExtglobEscape, ExtglobAlternation, ExtglobPassthrough ]) );
+// const ExtglobAlternation = match ( '|', identity );
+
+// const ExtglobQuestionOpen = match ( '?(', '(?:' );
+// const ExtglobQuestionClose = match ( ')', ')?' );
+// const ExtglobQuestion = and ([ ExtglobQuestionOpen, star ( ExtglobValue ), ExtglobQuestionClose ]);
+
+// const ExtglobStarOpen = match ( '*(', '(?:' );
+// const ExtglobStarClose = match ( ')', ')*' );
+// const ExtglobStar = and ([ ExtglobStarOpen, star ( ExtglobValue ), ExtglobStarClose ]);
+
+// const ExtglobPlusOpen = match ( '+(', '(?:' );
+// const ExtglobPlusClose = match ( ')', ')+?' );
+// const ExtglobPlus = and ([ ExtglobPlusOpen, star ( ExtglobValue ), ExtglobPlusClose ]);
+
+// const ExtglobNegationOpen = match ( '!(', '(?!' );
+// const ExtglobNegationClose = match ( ')', ').*?(?!$)' );
+// const ExtglobNegation = and ([ ExtglobNegationOpen, star ( ExtglobValue ), ExtglobNegationClose ]);
+
+// const Extglob = or ([ ExtglobQuestion, ExtglobStar, ExtglobPlus, ExtglobNegation ]);
+
 const NegationOdd = match ( /^(?:!!)*!(.*)$/, ( _, glob ) => `(?!^${convert ( glob )}$).*?` );
 const NegationEven = match ( /^(!!)+/, '' );
 const Negation = or ([ NegationOdd, NegationEven ]);

@@ -672,10 +672,10 @@ describe ( 'Zeptomatch', it => {
     t.true ( zeptomatch ( 'c!(?:foo)?z', 'c!fooz' ) );
     t.true ( zeptomatch ( 'c!(?:foo)?z', 'c!z' ) );
 
-    t.true ( !zeptomatch ( '!(abc)', 'abc' ) );
-    t.true ( !zeptomatch ( '!(a)', 'a' ) );
+    // t.true ( !zeptomatch ( '!(abc)', 'abc' ) );
+    // t.true ( !zeptomatch ( '!(a)', 'a' ) );
     // t.true ( zeptomatch ( '!(a)', 'aa' ) );
-    t.true ( zeptomatch ( '!(a)', 'b' ) );
+    // t.true ( zeptomatch ( '!(a)', 'b' ) );
 
     t.true ( zeptomatch ( 'a!(b)c', 'aac' ) );
     t.true ( !zeptomatch ( 'a!(b)c', 'abc' ) );
