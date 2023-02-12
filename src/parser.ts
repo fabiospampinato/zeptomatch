@@ -1,70 +1,78 @@
 
 /* IMPORT */
 
-import {rule, parse} from './peg';
+import {match, star, or, parse} from 'grammex';
 import {memoize, splitWith} from './utils';
-import type {Rule} from './peg';
+import type {Rule} from 'grammex';
 
-/* HELPERS */
+/* RULES */
 
 //TODO: Write this properly once we have parser combinators, to simplify it and to support arbitrary nesting levels
 
-const GLOB_ESCAPE_GRAMMAR = [
+const GLOB_ESCAPE_RULES = [
   /* ESCAPED */
-  rule ( /(\\.)/, String ),
+  match ( /(\\.)/, String ),
   /* ESCAPE */
-  rule ( /([$.*+?^(){}[\]\|])/, char => `\\${char}` ),
+  match ( /([$.*+?^(){}[\]\|])/, char => `\\${char}` ),
   /* PASSTHROUGH */
-  rule ( /(.)/, String )
+  match ( /(.)/, String )
 ];
 
-const GLOB_NORMALIZE_GRAMMAR = [
+const GLOB_NORMALIZE_RULES = [
   /* STAR STAR STAR+ */
-  rule ( /(\*\*\*+)/, '*' ),
+  match ( /(\*\*\*+)/, '*' ),
   /* STAR STAR */
-  rule ( /(\*\*)/, ( _, glob, index ) => {
-    const prev = glob[+index - 1];
-    const next = glob[+index + 2];
+  match ( /(\*\*)/, ( match, stars, input, index ) => {
+    const prev = input[+index - 1];
+    const next = input[+index + 2];
     if ( prev && !'\\/{[(!'.includes ( prev ) ) return '*';
     if ( next && !'/)]}'.includes ( next ) ) return '*';
     return '**';
   }),
   /* ESCAPED */
-  rule ( /(\\.)/, String ),
+  match ( /(\\.)/, String ),
   /* PASSTHROUGH */
-  rule ( /(.)/, String )
+  match ( /(.)/, String )
 ];
 
-const GLOB_PARSE_GRAMMAR = [
+const GLOB_PARSE_RULES = [
   /* NEGATION - ODD */
-  rule ( /^(?:!!)*!(.*)$/, glob => `(?!^${parseGlob ( glob )}$).*?` ),
+  match ( /^(?:!!)*!(.*)$/, ( match, glob ) => `(?!^${parseGlob ( glob )}$).*?` ),
   /* NEGATION - EVEN */
-  rule ( /^(!!)+/, '' ),
+  match ( /^(!!)+/, '' ),
   /* STAR STAR */
-  rule ( /\/(\*\*\/)+/, '(?:/.+/|/)' ),
-  rule ( /\/(\*\*)$/, '(?:/.*|$)' ),
-  rule ( /^(\*\*\/)+/, '(?:^|.*/)' ),
-  rule ( /(\*\*)/, '.*' ),
+  match ( /\/(\*\*\/)+/, '(?:/.+/|/)' ),
+  match ( /\/(\*\*)$/, '(?:/.*|$)' ),
+  match ( /^(\*\*\/)+/, '(?:^|.*/)' ),
+  match ( /(\*\*)/, '.*' ),
   /* STAR */
-  rule ( /(\*(?!\/\*\*\/)\/)/, '[^/]*/' ),
-  rule ( /(\*)/, '[^/]*' ),
+  match ( /(\*(?!\/\*\*\/)\/)/, '[^/]*/' ),
+  match ( /(\*)/, '[^/]*' ),
   /* QUESTION */
-  rule ( /(\?)/, '[^/]' ),
+  match ( /(\?)/, '[^/]' ),
   /* CLASS */
-  rule ( /\[([!^]?)([^\]]*)\]/, ( negation, chars ) => `[${negation && '^/'}${parseEscape ( chars )}]` ),
+  match ( /\[([!^]?)([^\]]*)\]/, ( match, negation, chars ) => `[${negation && '^/'}${parseEscape ( chars )}]` ),
   /* BRACES */
   // Match regex: https://regex101.com/r/UVxqkv/1
   // Split regex: https://regex101.com/r/j8ZmA3/1
-  rule ( /\{((?:\\.|\{[^}]*\}|\[[^\]]*\]|[^}])*)\}/, alternations => `(?:${splitWith ( alternations, /(?:^(?=,)|\\.|\{[^}]*\}|\[[^\]]*\]|[^,]|(?<=,)$)+/g ).map ( parseGlob ).join ( '|' )})` ),
+  match ( /\{((?:\\.|\{[^}]*\}|\[[^\]]*\]|[^}])*)\}/, ( match, alternations ) => `(?:${splitWith ( alternations, /(?:^(?=,)|\\.|\{[^}]*\}|\[[^\]]*\]|[^,]|(?<=,)$)+/g ).map ( parseGlob ).join ( '|' )})` ),
   /* ESCAPE */
-  ...GLOB_ESCAPE_GRAMMAR
+  ...GLOB_ESCAPE_RULES
 ];
+
+/* GRAMMARS */
+
+const GLOB_ESCAPE_GRAMMAR = star ( or ( GLOB_ESCAPE_RULES ) );
+
+const GLOB_NORMALIZE_GRAMMAR = star ( or ( GLOB_NORMALIZE_RULES ) );
+
+const GLOB_PARSE_GRAMMAR = star ( or ( GLOB_PARSE_RULES ) );
 
 /* MAIN */
 
-const parseWith = ( input: string, rules: Rule<string>[] ): string => {
+const parseWith = ( input: string, rule: Rule<string, null> ): string => {
 
-  return parse ( input, rules ).join ( '' );
+  return parse ( input, rule, null ).join ( '' );
 
 };
 

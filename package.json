@@ -21,6 +21,9 @@
     "match",
     "matcher"
   ],
+  "dependencies": {
+    "grammex": "^1.0.1"
+  },
   "devDependencies": {
     "fava": "^0.1.0",
     "tsex": "^2.1.0",
