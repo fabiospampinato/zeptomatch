@@ -349,18 +349,18 @@ describe ( 'Zeptomatch', it => {
 
   });
 
-  it.skip ( 'ranges', t => {
+  it ( 'ranges', t => {
 
-    t.true ( t.true ( 'a/{a..c}', 'a/c' ) );
-    t.true ( !t.true ( 'a/{a..c}', 'a/z' ) );
-    t.true ( t.true ( 'a/{1..100}', 'a/99' ) );
-    t.true ( !t.true ( 'a/{1..100}', 'a/101' ) );
-    t.true ( t.true ( 'a/{01..10}', 'a/02' ) );
-    t.true ( !t.true ( 'a/{01..10}', 'a/2' ) );
+    t.true ( zeptomatch ( 'a/{a..c}', 'a/c' ) );
+    t.true ( !zeptomatch ( 'a/{a..c}', 'a/z' ) );
+    t.true ( zeptomatch ( 'a/{1..100}', 'a/99' ) );
+    t.true ( !zeptomatch ( 'a/{1..100}', 'a/101' ) );
+    t.true ( zeptomatch ( 'a/{01..10}', 'a/02' ) );
+    t.true ( !zeptomatch ( 'a/{01..10}', 'a/2' ) );
 
   });
 
-  it.skip ( 'exploits', t => {
+  it ( 'exploits', t => {
 
     t.true ( !zeptomatch ( `${'\\'.repeat ( 65500 )}A`, '\\A' ) ); // This matches in picomatch, but why though?
     t.true ( zeptomatch ( `!${'\\'.repeat ( 65500 )}A`, 'A' ) );
