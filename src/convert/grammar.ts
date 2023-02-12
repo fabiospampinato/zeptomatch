@@ -3,6 +3,7 @@
 
 import {match, lazy, star, and, or, optional} from 'grammex';
 import convert from '~/convert/parser';
+import {makeRangePaddedInt, makeRangeAlpha} from '~/range';
 import {identity} from '~/utils';
 
 /* MAIN */
@@ -36,16 +37,24 @@ const ClassPassthrough = match ( /[^\]]/, identity );
 const ClassValue = or ([ Escaped, ClassEscape, ClassRange, ClassPassthrough ]);
 const Class = and ([ ClassOpen, optional ( ClassNegation ), star ( ClassValue ), ClassClose ]);
 
+const RangeOpen = match ( '{', '(?:' );
+const RangeClose = match ( '}', ')' );
+const RangeNumeric = match ( /(\d+)\.\.(\d+)/, ( _, $1, $2 ) => makeRangePaddedInt ( +$1, +$2, Math.min ( $1.length, $2.length ) ).join ( '|' ) );
+const RangeAlphaLower = match ( /([a-z]+)\.\.([a-z]+)/, ( _, $1, $2 ) => makeRangeAlpha ( $1, $2 ).join ( '|' ) );
+const RangeAlphaUpper = match ( /([A-Z]+)\.\.([A-Z]+)/, ( _, $1, $2 ) => makeRangeAlpha ( $1.toLowerCase (), $2.toLowerCase () ).join ( '|' ).toUpperCase () );
+const RangeValue = or ([ RangeNumeric, RangeAlphaLower, RangeAlphaUpper ]);
+const Range = and ([ RangeOpen, RangeValue, RangeClose ]);
+
 const BracesOpen = match ( '{', '(?:' );
 const BracesClose = match ( '}', ')' );
 const BracesComma = match ( ',', '|' );
 const BracesEscape = match ( /[$.*+?^(){[\]\|]/, char => `\\${char}` );
 const BracesPassthrough = match ( /[^}]/, identity );
 const BracesNested = lazy ( () => Braces );
-const BracesValue = or ([ StarStar, Star, Question, Class, BracesNested, Escaped, BracesEscape, BracesComma, BracesPassthrough ]);
+const BracesValue = or ([ StarStar, Star, Question, Class, Range, BracesNested, Escaped, BracesEscape, BracesComma, BracesPassthrough ]);
 const Braces = and ([ BracesOpen, star ( BracesValue ), BracesClose ]);
 
-const Grammar = star ( or ([ Negation, StarStar, Star, Question, Class, Braces, Escaped, Escape, Passthrough ]) );
+const Grammar = star ( or ([ Negation, StarStar, Star, Question, Class, Range, Braces, Escaped, Escape, Passthrough ]) );
 
 /* EXPORT */
 

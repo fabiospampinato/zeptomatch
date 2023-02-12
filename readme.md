@@ -17,6 +17,8 @@ The following syntax is supported:
 | `[^abc]`    | Matches any character, except for the characters the class, and the path separator, one time.                                       |
 | `[^a-z]`    | Matches any character, except for the characters in the range in the class, and the path separator, one time.                       |
 | `{foo,bar}` | Matches any of the alternations, which are separated by a comma, inside the braces.                                                 |
+| `{01..99}`  | Matches any of the numbers in the expanded range. Padding is supported and opt-in.                                                  |
+| `{a..zz}`   | Matches any of the strings in the expanded range. Upper-cased ranges are supported and opt-in.                                      |
 | `!glob`     | Matches anything except the provided glob. Negations can only be used at the start of the glob.                                     |
 | `!!glob`    | Matches the provided glob. Negations can only be used at the start of the glob.                                                     |
 

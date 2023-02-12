@@ -40,6 +40,76 @@ describe ( 'Zeptomatch', it => {
 
   });
 
+  it ( 'native_range', t => {
+
+    // Numeric
+
+    t.true ( zeptomatch ( '{1..20}', '1' ) );
+    t.true ( zeptomatch ( '{1..20}', '10' ) );
+    t.true ( zeptomatch ( '{1..20}', '20' ) );
+
+    t.true ( zeptomatch ( '{20..1}', '1' ) );
+    t.true ( zeptomatch ( '{20..1}', '10' ) );
+    t.true ( zeptomatch ( '{20..1}', '20' ) );
+
+    t.true ( !zeptomatch ( '{1..20}', '0' ) );
+    t.true ( !zeptomatch ( '{1..20}', '22' ) );
+
+    t.true ( !zeptomatch ( '{20..1}', '0' ) );
+    t.true ( !zeptomatch ( '{20..1}', '22' ) );
+
+    // Numeric padded
+
+    t.true ( zeptomatch ( '{01..20}', '01' ) );
+    t.true ( zeptomatch ( '{01..20}', '10' ) );
+    t.true ( zeptomatch ( '{01..20}', '20' ) );
+
+    t.true ( zeptomatch ( '{20..01}', '01' ) );
+    t.true ( zeptomatch ( '{20..01}', '10' ) );
+    t.true ( zeptomatch ( '{20..01}', '20' ) );
+
+    t.true ( !zeptomatch ( '{01..20}', '00' ) );
+    t.true ( !zeptomatch ( '{01..20}', '1' ) );
+    t.true ( !zeptomatch ( '{01..20}', '22' ) );
+
+    t.true ( !zeptomatch ( '{20..01}', '00' ) );
+    t.true ( !zeptomatch ( '{20..01}', '1' ) );
+    t.true ( !zeptomatch ( '{20..01}', '22' ) );
+
+    // Alphabetic
+
+    t.true ( zeptomatch ( '{a..zz}', 'a' ) );
+    t.true ( zeptomatch ( '{a..zz}', 'bb' ) );
+    t.true ( zeptomatch ( '{a..zz}', 'za' ) );
+
+    t.true ( zeptomatch ( '{zz..a}', 'a' ) );
+    t.true ( zeptomatch ( '{zz..a}', 'bb' ) );
+    t.true ( zeptomatch ( '{zz..a}', 'za' ) );
+
+    t.true ( !zeptomatch ( '{a..zz}', 'aaa' ) );
+    t.true ( !zeptomatch ( '{a..zz}', 'A' ) );
+
+    t.true ( !zeptomatch ( '{zz..a}', 'aaa' ) );
+    t.true ( !zeptomatch ( '{zz..a}', 'A' ) );
+
+    // Alphabetic uppercase
+
+    t.true ( zeptomatch ( '{A..ZZ}', 'A' ) );
+    t.true ( zeptomatch ( '{A..ZZ}', 'BB' ) );
+    t.true ( zeptomatch ( '{A..ZZ}', 'ZA' ) );
+
+    t.true ( zeptomatch ( '{ZZ..A}', 'A' ) );
+    t.true ( zeptomatch ( '{ZZ..A}', 'BB' ) );
+    t.true ( zeptomatch ( '{ZZ..A}', 'ZA' ) );
+
+    t.true ( !zeptomatch ( '{A..ZZ}', 'AAA' ) );
+    t.true ( !zeptomatch ( '{A..ZZ}', 'a' ) );
+
+    t.true ( !zeptomatch ( '{ZZ..A}', 'AAA' ) );
+    t.true ( !zeptomatch ( '{ZZ..A}', 'a' ) );
+
+  });
+
   // Tests adapted from "picomatch": https://github.com/micromatch/picomatch
   // License: https://github.com/micromatch/picomatch/blob/master/LICENSE
 
