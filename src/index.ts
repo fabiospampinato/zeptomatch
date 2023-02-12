@@ -1,7 +1,8 @@
 
 /* IMPORT */
 
-import {parseGlob} from './parser';
+import convert from '~/convert/parser';
+import normalize from '~/normalize/parser';
 
 /* MAIN */
 
@@ -21,7 +22,7 @@ const zeptomatch = ( glob: string | string[], path: string ): boolean => {
 
 zeptomatch.compile = ( glob: string ): RegExp => {
 
-  return new RegExp ( `^${parseGlob ( glob )}$`, 's' );
+  return new RegExp ( `^${convert ( normalize ( glob ) )}$`, 's' );
 
 };
 

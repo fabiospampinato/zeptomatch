@@ -22,7 +22,7 @@
     "matcher"
   ],
   "dependencies": {
-    "grammex": "^1.0.1"
+    "grammex": "^1.1.0"
   },
   "devDependencies": {
     "fava": "^0.1.0",

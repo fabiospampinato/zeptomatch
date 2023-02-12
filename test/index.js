@@ -25,6 +25,19 @@ describe ( 'Zeptomatch', it => {
     t.true ( !zeptomatch ( '*.js', 'a.md' ) );
     t.true ( !zeptomatch ( '*.js', 'a/b.js' ) );
 
+    t.true ( zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'aaa' ) );
+    t.true ( zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'aab' ) );
+    t.true ( zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'aba' ) );
+    t.true ( zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'abb' ) );
+    t.true ( zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'baa' ) );
+    t.true ( zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'bab' ) );
+    t.true ( zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'bba' ) );
+    t.true ( zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'bbb' ) );
+    t.true ( !zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'a' ) );
+    t.true ( !zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'b' ) );
+    t.true ( !zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'aa' ) );
+    t.true ( !zeptomatch ( '{a{a{a,b},b{a,b}},b{a{a,b},b{a,b}}}', 'bb' ) );
+
   });
 
   // Tests adapted from "picomatch": https://github.com/micromatch/picomatch

@@ -28,14 +28,12 @@ Additional features and details:
 - Zeptomatch automatically normalizes path separators, since matching Windows-style paths would most likely be a mistake.
 - Zeptomatch supports compiling a glob to a standalone regular expression.
 - Zeptomatch doesn't do anything special for file names starting with a dot.
+- Zeptomatch supports nesting braces indefinitely.
 
 Limitations:
 
 - POSIX classes (e.g. `[:alnum:]`) are not supported. Implementing them seems a bit out of scope for a "zepto"-level library.
 - Extglobs (e.g. `?(foo)`) are not supported. They might be in the future though.
-- Braces (e.g. `{foo,bar}`) can only be nested inside other braces at most once.
-
-Potentially some of these limitations may be lifted in the future.
 
 ## Install
 
