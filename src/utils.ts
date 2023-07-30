@@ -2,7 +2,7 @@
 /* IMPORT */
 
 import {parse} from 'grammex';
-import type {Rule} from 'grammex';
+import type {ExplicitRule} from 'grammex';
 
 /* MAIN */
 
@@ -12,11 +12,11 @@ const identity = <T> ( value: T ): T => {
 
 };
 
-const makeParser = ( grammar: Rule<string, unknown> ) => {
+const makeParser = ( grammar: ExplicitRule<string> ) => {
 
   return memoize (( input: string ): string => {
 
-    return parse ( input, grammar, null ).join ( '' );
+    return parse ( input, grammar, { memoization: false } ).join ( '' );
 
   });
 
