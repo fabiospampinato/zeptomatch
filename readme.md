@@ -6,21 +6,21 @@ An absurdly small glob matcher that packs a punch.
 
 The following syntax is supported:
 
-| Syntax      | Description                                                                                                                         |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `*`         | Matches any character, except for the path separator, zero or more times.                                                           |
-| `**`        | Matches any character zero or more times. If it doesn't span the entire length of a path segment it's interpreted as a `*` instead. |
-| `?`         | Matches any character, except for the path separator, one time.                                                                     |
-| `\`         | Matches the character after it in the glob literally. This is the escape operator.                                                  |
-| `[abc]`     | Matches any of the characters in the class one time.                                                                                |
-| `[a-z]`     | Matches any of the characters in the range in the class one time.                                                                   |
-| `[^abc]`    | Matches any character, except for the characters the class, and the path separator, one time.                                       |
-| `[^a-z]`    | Matches any character, except for the characters in the range in the class, and the path separator, one time.                       |
-| `{foo,bar}` | Matches any of the alternations, which are separated by a comma, inside the braces.                                                 |
-| `{01..99}`  | Matches any of the numbers in the expanded range. Padding is supported and opt-in.                                                  |
-| `{a..zz}`   | Matches any of the strings in the expanded range. Upper-cased ranges are supported and opt-in.                                      |
-| `!glob`     | Matches anything except the provided glob. Negations can only be used at the start of the glob.                                     |
-| `!!glob`    | Matches the provided glob. Negations can only be used at the start of the glob.                                                     |
+| Syntax      | Description                                                                                                                             |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `*`         | Matches any character, except for the path separator, zero or more times.                                                               |
+| `**`        | Matches any character zero or more times. If it doesn't span the entire length of a path segment it's interpreted as a `*` instead.     |
+| `?`         | Matches any character, except for the path separator, one time.                                                                         |
+| `\`         | Matches the character after it in the glob literally. This is the escape operator.                                                      |
+| `[abc]`     | Matches any of the characters in the class one time.                                                                                    |
+| `[a-z]`     | Matches any of the characters in the range in the class one time.                                                                       |
+| `[^abc]`    | Matches any character, except for the characters the class, and the path separator, o∏ne time. Aliased as `[!abc]` also.                 |
+| `[^a-z]`    | Matches any character, except for the characters in the range in the class, and the path separator, one time. Aliased as `[!a-z]` also. |
+| `{foo,bar}` | Matches any of the alternations, which are separated by a comma, inside the braces.                                                     |
+| `{01..99}`  | Matches any of the numbers in the expanded range. Padding is supported and opt-in.                                                      |
+| `{a..zz}`   | Matches any of the strings in the expanded range. Upper-cased ranges are supported and opt-in.                                          |
+| `!glob`     | Matches anything except the provided glob. Negations can only be used at the start of the glob.                                         |
+| `!!glob`    | Matches the provided glob. Negations can only be used at the start of the glob.                                                         |
 
 Additional features and details:
 
