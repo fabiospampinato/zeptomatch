@@ -8,6 +8,10 @@ import {identity} from '~/utils';
 
 /* MAIN */
 
+const FastPathAll = match ( /^\*\*\/\*$/, '.*' );
+const FastPathExtension = match ( /^\*\*\/\*\.([ a-zA-Z0-9._-]+)$/, ( _, ext ) => `.*\\.${ext}` );
+const FastPathExtensions = match ( /^\*\*\/\*\.\{([ a-zA-Z0-9._-]+(?:,[ a-zA-Z0-9._-]+)*)\}$/, ( _, exts ) => `.*\\.(?:${exts.replaceAll ( ',', '|' )})` );
+
 const Escaped = match ( /\\./, identity );
 const Escape = match ( /[$.*+?^(){}[\]\|]/, char => `\\${char}` );
 const Passthrough = match ( /./, identity );
@@ -77,7 +81,7 @@ const BracesNested = lazy ( () => Braces );
 const BracesValue = or ([ StarStar, Star, Question, Class, Range, BracesNested, Escaped, BracesEscape, BracesComma, BracesPassthrough ]);
 const Braces = and ([ BracesOpen, star ( BracesValue ), BracesClose ]);
 
-const Grammar = star ( or ([ Negation, StarStar, Star, Question, Class, Range, Braces, Escaped, Escape, Passthrough ]) );
+const Grammar = star ( or ([ FastPathAll, FastPathExtension, FastPathExtensions, Negation, StarStar, Star, Question, Class, Range, Braces, Escaped, Escape, Passthrough ]) );
 
 /* EXPORT */
 
