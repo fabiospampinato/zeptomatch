@@ -58,6 +58,10 @@ zeptomatch ( '*.js', 'a/b.js' ); // => false
 // Compile a glob to a regular expression
 
 const re = zeptomatch.compile ( '*.js' ); // => /^[^/]*\.js$/s
+
+// Escape a glob to a string that will be matched as is
+
+const escaped = zeptomatch.escape ( '*.js' ); // => '\\*\\.js'
 ```
 
 ## License
