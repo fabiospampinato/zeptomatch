@@ -2,7 +2,7 @@
   "name": "zeptomatch",
   "repository": "github:fabiospampinato/zeptomatch",
   "description": "An absurdly small glob matcher that packs a punch.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "main": "dist/index.js",
   "exports": "./dist/index.js",
