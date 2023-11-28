@@ -9,6 +9,9 @@ import normalize from '~/normalize/parser';
 const zeptomatch = ( glob: string | string[], path: string ): boolean => {
 
   const globs = Array.isArray ( glob ) ? glob : [glob];
+
+  if ( !globs.length ) return false;
+
   const res = globs.map ( zeptomatch.compile );
   const isTrailing = globs.every ( glob => /(\/(?:\*\*)?|\[\/\])$/.test ( glob ) );
   const normpath = path.replace ( /[\\\/]+/g, '/' ).replace ( /\/$/, isTrailing ? '/' : '' );
