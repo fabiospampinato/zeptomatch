@@ -29,12 +29,6 @@ zeptomatch.compile = ( glob: string ): RegExp => {
 
 };
 
-zeptomatch.escape = ( glob: string ): string => {
-
-  return glob.replace ( /(\\.)|([$.*+?!^(){}[\]\|])|(.)/gs, ( _, $1, $2, $3 ) => $1 || $3 || `\\${$2}` );
-
-};
-
 /* EXPORT */
 
 export default zeptomatch;

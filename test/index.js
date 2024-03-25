@@ -110,19 +110,6 @@ describe ( 'Zeptomatch', it => {
 
   });
 
-  it ( 'native_escape', t => {
-
-    t.is ( zeptomatch.escape ( '*.js' ), '\\*\\.js' );
-    t.is ( zeptomatch.escape ( '!*.{js,md}' ), '\\!\\*\\.\\{js,md\\}' );
-
-    t.true ( zeptomatch ( zeptomatch.escape ( '*.js' ), '*.js' ) );
-    t.true ( zeptomatch ( zeptomatch.escape ( '!*.{js,md}' ), '!*.{js,md}' ) );
-
-    t.false ( zeptomatch ( zeptomatch.escape ( '*.js' ), 'a.js' ) );
-    t.false ( zeptomatch ( zeptomatch.escape ( '!*.{js,md}' ), 'a.js' ) );
-
-  });
-
   // Tests adapted from "picomatch": https://github.com/micromatch/picomatch
   // License: https://github.com/micromatch/picomatch/blob/master/LICENSE
 
