@@ -65,6 +65,7 @@ const re = zeptomatch.compile ( '*.js' ); // => /^[^/]*\.js$/s
 The following additional utilities are available, as standalone packages:
 
 - [`zeptomatch-escape`](https://github.com/fabiospampinato/zeptomatch-escape): A little utility for escaping globs before passing them to zeptomatch.
+- [`zeptomatch-explode`](https://github.com/fabiospampinato/zeptomatch-explode): A little utility for exploding a zeptomatch-flavored glob into its dynamic and static parts.
 
 ## License
 
