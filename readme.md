@@ -66,6 +66,8 @@ The following additional utilities are available, as standalone packages:
 
 - [`zeptomatch-escape`](https://github.com/fabiospampinato/zeptomatch-escape): A little utility for escaping globs before passing them to zeptomatch.
 - [`zeptomatch-explode`](https://github.com/fabiospampinato/zeptomatch-explode): A little utility for exploding a zeptomatch-flavored glob into its dynamic and static parts.
+- [`zeptomatch-is-static`](https://github.com/fabiospampinato/zeptomatch-is-static): A little utility for checking if a glob is fully static.
+- [`zeptomatch-unescape`](https://github.com/fabiospampinato/zeptomatch-unescape): A little utility for removing escape sequences from a glob.
 
 ## License
 
