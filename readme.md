@@ -14,7 +14,7 @@ The following syntax is supported:
 | `\`         | Matches the character after it in the glob literally. This is the escape operator.                                                      |
 | `[abc]`     | Matches any of the characters in the class one time.                                                                                    |
 | `[a-z]`     | Matches any of the characters in the range in the class one time.                                                                       |
-| `[^abc]`    | Matches any character, except for the characters the class, and the path separator, o∏ne time. Aliased as `[!abc]` also.                 |
+| `[^abc]`    | Matches any character, except for the characters in the class, and the path separator, one time. Aliased as `[!abc]` also.              |
 | `[^a-z]`    | Matches any character, except for the characters in the range in the class, and the path separator, one time. Aliased as `[!a-z]` also. |
 | `{foo,bar}` | Matches any of the alternations, which are separated by a comma, inside the braces.                                                     |
 | `{01..99}`  | Matches any of the numbers in the expanded range. Padding is supported and opt-in.                                                      |
@@ -40,7 +40,7 @@ Limitations:
 ## Install
 
 ```sh
-npm install --save zeptomatch
+npm install zeptomatch
 ```
 
 ## Usage
@@ -48,14 +48,14 @@ npm install --save zeptomatch
 ```ts
 import zeptomatch from 'zeptomatch';
 
-// Check if a glob matches a path
+// Let's check if a glob matches a path
 
 zeptomatch ( '*.js', 'abcd' ); // => false
 zeptomatch ( '*.js', 'a.js' ); // => true
 zeptomatch ( '*.js', 'a.md' ); // => false
 zeptomatch ( '*.js', 'a/b.js' ); // => false
 
-// Compile a glob to a regular expression
+// Let's compile a glob to a regular expression
 
 const re = zeptomatch.compile ( '*.js' ); // => /^[^/]*\.js$/s
 ```
