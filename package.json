@@ -2,6 +2,7 @@
   "name": "zeptomatch",
   "repository": "github:fabiospampinato/zeptomatch",
   "description": "An absurdly small glob matcher that packs a punch.",
+  "license": "MIT",
   "version": "2.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -22,11 +23,11 @@
     "matcher"
   ],
   "dependencies": {
-    "grammex": "^3.1.1"
+    "grammex": "^3.1.6"
   },
   "devDependencies": {
-    "fava": "^0.2.0",
-    "tsex": "^3.0.1",
-    "typescript": "^5.1.6"
+    "fava": "^0.3.4",
+    "tsex": "^4.0.2",
+    "typescript": "^5.7.3"
   }
 }
