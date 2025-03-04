@@ -1,8 +1,8 @@
 
 /* IMPORT */
 
-import Grammar from '~/convert/grammar';
-import {makeParser} from '~/utils';
+import {makeParser} from '../utils';
+import Grammar from './grammar';
 
 /* MAIN */
 

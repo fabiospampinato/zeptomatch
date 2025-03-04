@@ -2,7 +2,7 @@
 /* IMPORT */
 
 import {match, star, or} from 'grammex';
-import {identity} from '~/utils';
+import {identity} from '../utils';
 
 /* MAIN */
 

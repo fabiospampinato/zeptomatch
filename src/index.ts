@@ -1,8 +1,8 @@
 
 /* IMPORT */
 
-import convert from '~/convert/parser';
-import normalize from '~/normalize/parser';
+import convert from './convert/parser';
+import normalize from './normalize/parser';
 
 /* MAIN */
 

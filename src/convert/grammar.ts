@@ -2,9 +2,9 @@
 /* IMPORT */
 
 import {match, lazy, star, and, or, optional} from 'grammex';
-import convert from '~/convert/parser';
-import {makeRangePaddedInt, makeRangeAlpha} from '~/range';
-import {identity} from '~/utils';
+import {makeRangePaddedInt, makeRangeAlpha} from '../range';
+import {identity} from '../utils';
+import convert from './parser';
 
 /* MAIN */
 
