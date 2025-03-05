@@ -3,6 +3,7 @@
 
 import convert from './convert/parser';
 import normalize from './normalize/parser';
+import {memoize} from './utils';
 
 /* MAIN */
 
@@ -28,11 +29,11 @@ const zeptomatch = ( glob: string | string[], path: string ): boolean => {
 
 /* UTILITIES */
 
-zeptomatch.compile = ( glob: string ): RegExp => {
+zeptomatch.compile = memoize (( glob: string ): RegExp => {
 
   return new RegExp ( `^${convert ( normalize ( glob ) )}[\\\\/]?$`, 's' );
 
-};
+});
 
 /* EXPORT */
 

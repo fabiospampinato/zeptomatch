@@ -14,11 +14,11 @@ const identity = <T> ( value: T ): T => {
 
 const makeParser = ( grammar: ExplicitRule<string> ) => {
 
-  return memoize (( input: string ): string => {
+  return ( input: string ): string => {
 
     return parse ( input, grammar, { memoization: false } ).join ( '' );
 
-  });
+  };
 
 };
 
