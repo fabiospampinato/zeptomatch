@@ -57,7 +57,7 @@ zeptomatch ( '*.js', 'a/b.js' ); // => false
 
 // Let's compile a glob to a regular expression
 
-const re = zeptomatch.compile ( '*.js' ); // => /^[^/]*\.js$/s
+const re = zeptomatch.compile ( '*.js' ); // => /^[^\\/]*\.js[\\/]?$/s
 ```
 
 ## Utilities
