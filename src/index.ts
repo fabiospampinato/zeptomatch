@@ -8,16 +8,21 @@ import normalize from './normalize/parser';
 
 const zeptomatch = ( glob: string | string[], path: string ): boolean => {
 
-  const globs = Array.isArray ( glob ) ? glob : [glob];
+  if ( Array.isArray ( glob ) ) {
 
-  if ( !globs.length ) return false;
+    const res = glob.map ( zeptomatch.compile );
+    const isMatch = res.some ( re => re.test ( path ) );
 
-  const res = globs.map ( zeptomatch.compile );
-  const isTrailing = globs.every ( glob => /(\/(?:\*\*)?|\[\/\])$/.test ( glob ) );
-  const normpath = path.replace ( /[\\\/]+/g, '/' ).replace ( /\/$/, isTrailing ? '/' : '' );
-  const isMatch = res.some ( re => re.test ( normpath ) );
+    return isMatch;
 
-  return isMatch;
+  } else {
+
+    const re = zeptomatch.compile ( glob );
+    const isMatch = re.test ( path );
+
+    return isMatch;
+
+  }
 
 };
 
@@ -25,7 +30,7 @@ const zeptomatch = ( glob: string | string[], path: string ): boolean => {
 
 zeptomatch.compile = ( glob: string ): RegExp => {
 
-  return new RegExp ( `^${convert ( normalize ( glob ) )}$`, 's' );
+  return new RegExp ( `^${convert ( normalize ( glob ) )}[\\\\/]?$`, 's' );
 
 };
 

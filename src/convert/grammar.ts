@@ -1,8 +1,8 @@
 
 /* IMPORT */
 
-import {match, lazy, star, and, or, optional} from 'grammex';
-import {makeRangePaddedInt, makeRangeAlpha} from '../range';
+import {match, and, lazy, optional, or, star} from 'grammex';
+import {makeRangeAlpha, makeRangePaddedInt} from '../range';
 import {identity} from '../utils';
 import convert from './parser';
 
@@ -39,21 +39,21 @@ const NegationOdd = match ( /^(?:!!)*!(.*)$/, ( _, glob ) => `(?!^${convert ( gl
 const NegationEven = match ( /^(!!)+/, '' );
 const Negation = or ([ NegationOdd, NegationEven ]);
 
-const StarStarBetween = match ( /\/(\*\*\/)+/, '(?:/.+/|/)' );
-const StarStarStart = match ( /^(\*\*\/)+/, '(?:^|.*/)' );
-const StarStarEnd = match ( /\/(\*\*)$/, '(?:/.*|$)' );
+const StarStarBetween = match ( /\/(\*\*\/)+/, '(?:[\\\\/].+[\\\\/]|[\\\\/])' );
+const StarStarStart = match ( /^(\*\*\/)+/, '(?:^|.*[\\\\/])' );
+const StarStarEnd = match ( /\/(\*\*)$/, '(?:[\\\\/].*|$)' );
 const StarStarNone = match ( /\*\*/, '.*' );
 const StarStar = or ([ StarStarBetween, StarStarStart, StarStarEnd, StarStarNone ]);
 
-const StarDouble = match ( /\*\/(?!\*\*\/)/, '[^/]*/' );
-const StarSingle = match ( /\*/, '[^/]*' );
+const StarDouble = match ( /\*\/(?!\*\*\/|\*$)/, '[^\\\\/]*[\\\\/]' );
+const StarSingle = match ( /\*/, '[^\\\\/]*' );
 const Star = or ([ StarDouble, StarSingle ]);
 
-const Question = match ( '?', '[^/]' );
+const Question = match ( '?', '[^\\\\/]' );
 
 const ClassOpen = match ( '[', identity );
 const ClassClose = match ( ']', identity );
-const ClassNegation = match ( /[!^]/, '^/' );
+const ClassNegation = match ( /[!^]/, '^\\\\/' );
 const ClassRange = match ( /[a-z]-[a-z]|[0-9]-[0-9]/i, identity );
 const ClassEscape = match ( /[$.*+?^(){}[\|]/, char => `\\${char}` );
 const ClassPassthrough = match ( /[^\]]/, identity );
