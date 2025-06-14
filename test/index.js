@@ -21,6 +21,8 @@ describe ( 'Zeptomatch', () => {
 
     describe ( name, it => {
 
+      // Native tests
+
       it ( 'native', t => {
 
         t.true ( !isMatch ( [], 'a' ) );
@@ -122,6 +124,13 @@ describe ( 'Zeptomatch', () => {
 
         t.true ( !isMatch ( '{ZZ..A}', 'AAA' ) );
         t.true ( !isMatch ( '{ZZ..A}', 'a' ) );
+
+      });
+
+      it ( 'native_slashes_normalization', t => {
+
+        t.true ( isMatch ( 'foo/*.json', 'foo\\bar.json' ) );
+        t.true ( isMatch ( 'foo/*.json', 'foo/bar.json' ) );
 
       });
 

@@ -10,6 +10,7 @@ import convert from './parser';
 
 const Escaped = match ( /\\./, identity );
 const Escape = match ( /[$.*+?^(){}[\]\|]/, char => `\\${char}` );
+const Slash = match ( /[\\/]/, '[\\\\/]' );
 const Passthrough = match ( /./, identity );
 
 // const ExtglobEscape = match ( /[$.*+?^({}[\]]/, char => `\\${char}` );
@@ -77,7 +78,7 @@ const BracesNested = lazy ( () => Braces );
 const BracesValue = or ([ StarStar, Star, Question, Class, Range, BracesNested, Escaped, BracesEscape, BracesComma, BracesPassthrough ]);
 const Braces = and ([ BracesOpen, star ( BracesValue ), BracesClose ]);
 
-const Grammar = star ( or ([ Negation, StarStar, Star, Question, Class, Range, Braces, Escaped, Escape, Passthrough ]) );
+const Grammar = star ( or ([ Negation, StarStar, Star, Question, Class, Range, Braces, Escaped, Escape, Slash, Passthrough ]) );
 
 /* EXPORT */
 
