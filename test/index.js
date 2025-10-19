@@ -122,12 +122,20 @@ describe ( 'Zeptomatch', it => {
     const glob = 'foo';
     const re1 = compile ( glob );
     const re2 = compile ( glob );
+    const re3 = compile ( glob, { partial: true } );
+    const re4 = compile ( glob, { partial: true } );
     t.is ( re1, re2 );
+    t.is ( re3, re4 );
+    t.not ( re1, re3 );
 
     const globs = ['foo', 'bar'];
-    const re3 = compile ( globs );
-    const re4 = compile ( globs );
-    t.is ( re3, re4 );
+    const re5 = compile ( globs );
+    const re6 = compile ( globs );
+    const re7 = compile ( globs, { partial: true } );
+    const re8 = compile ( globs, { partial: true } );
+    t.is ( re5, re6 );
+    t.is ( re7, re8 );
+    t.not ( re5, re8 );
 
   });
 
