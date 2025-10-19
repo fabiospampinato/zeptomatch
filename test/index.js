@@ -2,7 +2,12 @@
 /* IMPORT */
 
 import {describe} from 'fava';
-import isMatch from '../dist/index.js';
+import zeptomatch from '../dist/index.js';
+
+/* HELPERS */
+
+const isMatch = zeptomatch;
+const compile = zeptomatch.compile;
 
 /* MAIN */
 
@@ -109,6 +114,20 @@ describe ( 'Zeptomatch', it => {
     t.true ( isMatch ( '{foo/bar,baz/qux}', 'baz/qux' ) );
     t.false ( isMatch ( '{foo/bar,baz/qux}', 'foo/qux' ) );
     t.false ( isMatch ( '{foo/bar,baz/qux}', 'baz/bar' ) );
+
+  });
+
+  it ( 'native_memoization', t => {
+
+    const glob = 'foo';
+    const re1 = compile ( glob );
+    const re2 = compile ( glob );
+    t.is ( re1, re2 );
+
+    const globs = ['foo', 'bar'];
+    const re3 = compile ( globs );
+    const re4 = compile ( globs );
+    t.is ( re3, re4 );
 
   });
 
