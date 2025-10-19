@@ -7,7 +7,7 @@ import zeptomatch from '../dist/index.js';
 /* HELPERS */
 
 const GLOB = 'foo/**/{bar/baz,qux}/*.js';
-const GLOBS = ['foo/**/bar/qux/*.js', 'foo/**/baz/qux/*.js'];
+const GLOBS = ['foo/**/bar/baz/*.js', 'foo/**/qux/*.js'];
 const OPTIONS_PARTIAL = { partial: true };
 
 /* MAIN */
