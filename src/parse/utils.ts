@@ -46,6 +46,10 @@ const sequence = (() => { // A tree of nodes
 
 })();
 
+const slash = (): Node => { // A single node matching a slash
+  return regex ( '[\\\\/]' );
+};
+
 /* EXPORT */
 
-export {regex, alternation, sequence};
+export {regex, alternation, sequence, slash};

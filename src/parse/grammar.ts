@@ -5,26 +5,26 @@ import {match, and, lazy, optional, plus, or, star} from 'grammex';
 import {makeRangeAlpha, makeRangePaddedInt} from '../range';
 import {identity} from '../utils';
 // import zeptomatch from '..';
-import {regex, alternation, sequence} from './utils';
+import {regex, alternation, sequence, slash} from './utils';
 
 /* MAIN */
 
 const Escaped = match ( /\\./, regex );
 const Escape = match ( /[$.*+?^(){}[\]\|]/, char => regex ( `\\${char}` ) );
-const Slash = match ( /[\\\/]/, () => regex ( '[\\\\/]' ) );
+const Slash = match ( /[\\\/]/, slash );
 const Passthrough = match ( /[^$.*+?^(){}[\]\|\\\/]+/, regex );
 
 // const NegationOdd = match ( /^(?:!!)*!(.*)$/, ( _, glob ) => regex ( `(?!^${zeptomatch.compile ( glob )}$).*?` ) );
 // const NegationEven = match ( /^(!!)+/ );
 // const Negation = or ([ NegationOdd, NegationEven ]);
 
-const StarStarBetween = match ( /\/(\*\*\/)+/, () => regex ( '(?:[\\\\/].+[\\\\/]|[\\\\/])' ) );
-const StarStarStart = match ( /^(\*\*\/)+/, () => regex ( '(?:^|.*[\\\\/])' ) );
-const StarStarEnd = match ( /\/(\*\*)$/, () => regex ( '(?:[\\\\/].*|$)' ) );
-const StarStarNone = match ( /\*\*/, () => regex ( '.*' ) );
+const StarStarBetween = match ( /\/(\*\*\/)+/, () => alternation ([ sequence ([ slash (), regex ( '.+?' ), slash () ]), slash () ]) );
+const StarStarStart = match ( /^(\*\*\/)+/, () => alternation ([ regex ( '^' ), sequence ([ regex ( '.*?' ), slash () ]) ]) );
+const StarStarEnd = match ( /\/(\*\*)$/, () => alternation ([ sequence ([ slash (), regex ( '.*?' ) ]), regex ( '$' ) ]) );
+const StarStarNone = match ( /\*\*/, () => regex ( '.*?' ) );
 const StarStar = or ([ StarStarBetween, StarStarStart, StarStarEnd, StarStarNone ]);
 
-const StarDouble = match ( /\*\/(?!\*\*\/|\*$)/, () => regex ( '[^\\\\/]*[\\\\/]' ) );
+const StarDouble = match ( /\*\/(?!\*\*\/|\*$)/, () => sequence ([ regex ( '[^\\\\/]*?' ), slash () ]) );
 const StarSingle = match ( /\*/, () => regex ( '[^\\\\/]*' ) );
 const Star = or ([ StarDouble, StarSingle ]);
 
@@ -54,7 +54,7 @@ const BracesClose = match ( '}' );
 const BracesComma = match ( ',' );
 const BracesEscaped = match ( /\\./, regex );
 const BracesEscape = match ( /[$.*+?^(){[\]\|]/, char => regex ( `\\${char}` ) );
-const BracesSlash = match ( /[\\\/]/, () => regex ( '[\\\\/]' ) );
+const BracesSlash = match ( /[\\\/]/, slash );
 const BracesPassthrough = match ( /[^$.*+?^(){}[\]\|\\\/,]+/, regex );
 const BracesNested = lazy ( () => Braces );
 const BracesEmptyValue = match ( '', () => regex ( '(?:)' ) );

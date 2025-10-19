@@ -50,7 +50,7 @@ describe ( 'Zeptomatch', it => {
 
   });
 
-  it ( 'native_grammar', t => {
+  it ( 'native_grammar_full', t => {
 
     // Escaped
     t.true ( isMatch ( '\\n', '\n' ) );
@@ -117,6 +117,74 @@ describe ( 'Zeptomatch', it => {
 
   });
 
+  it ( 'native_grammar_partial', t => {
+
+    // Escaped
+    t.true ( isMatch ( '\\n\\n', '\n', { partial: true } ) );
+    t.true ( isMatch ( '\\(\\(', '(', { partial: true } ) );
+    // Escape
+    t.true ( isMatch ( '((', '(', { partial: true } ) );
+    // Slash
+    t.true ( isMatch ( '//', '/', { partial: true } ) );
+    t.true ( isMatch ( '//', '\\', { partial: true } ) );
+    // Passthrough
+    t.true ( isMatch ( 'abc', '', { partial: true } ) );
+    t.false ( isMatch ( 'abc', 'a', { partial: true } ) );
+    t.false ( isMatch ( 'abc', 'ab', { partial: true } ) );
+    t.true ( isMatch ( 'abc', 'abc', { partial: true } ) );
+
+    // Negation
+    // //TODO
+
+    // StarStar
+    t.true ( isMatch ( '**', '', { partial: true } ) );
+    t.true ( isMatch ( '**', 'foo', { partial: true } ) );
+    t.true ( isMatch ( '**', 'foo/', { partial: true } ) );
+    t.true ( isMatch ( '**', 'foo/bar', { partial: true } ) );
+    t.true ( isMatch ( '**', 'foo/bar/', { partial: true } ) );
+
+    // Star
+    t.true ( isMatch ( '*', '', { partial: true } ) );
+    t.true ( isMatch ( '*', 'abc', { partial: true } ) );
+    t.true ( isMatch ( '*.js', 'abc.js', { partial: true } ) );
+
+    // Question
+    t.true ( isMatch ( 'a?b', 'a', { partial: true } ) );
+    t.true ( isMatch ( 'a?b', 'ab', { partial: true } ) );
+    t.true ( isMatch ( 'a?b', 'abb', { partial: true } ) );
+    t.false ( isMatch ( 'a?b', 'abc', { partial: true } ) );
+
+    // Class
+    t.true ( isMatch ( '[a-z][a-z]', 'a', { partial: true } ) );
+    t.true ( isMatch ( '[A-Z][A-Z]', 'A', { partial: true } ) );
+    t.true ( isMatch ( '[a-zA-Z][a-zA-Z]', 'a', { partial: true } ) );
+    t.true ( isMatch ( '[a-zA-Z][a-zA-Z]', 'A', { partial: true } ) );
+    t.true ( isMatch ( '[0-9][0-9]', '0', { partial: true } ) );
+    t.true ( isMatch ( '[a-z][0-9][a-z][0-9]', 'a0', { partial: true } ) );
+    t.true ( isMatch ( '[^a-z][^0-9][^a-z][^0-9]', '0a', { partial: true } ) );
+
+    // Range
+    t.true ( isMatch ( '{1..9}{1..9}', '1', { partial: true } ) );
+    t.true ( isMatch ( '{a..z}{a..z}', 'a', { partial: true } ) );
+    t.true ( isMatch ( '{A..Z}{A..Z}', 'A', { partial: true } ) );
+    t.true ( isMatch ( '{A..Z}{1..9}{A..Z}{1..9}', 'A1', { partial: true } ) );
+    t.true ( isMatch ( '{1..9}{A..Z}{1..9}{A..Z}', '1A', { partial: true } ) );
+
+    // Braces
+    t.true ( isMatch ( '{foo,bar}baz', 'foo', { partial: true } ) );
+    t.true ( isMatch ( '{foo,bar}baz', 'bar', { partial: true } ) );
+    t.false ( isMatch ( '{foo,bar}baz', 'f', { partial: true } ) );
+    t.false ( isMatch ( '{foo,bar}baz', 'b', { partial: true } ) );
+
+    t.true ( isMatch ( '{foo/bar,baz/qux}', 'foo', { partial: true } ) );
+    t.true ( isMatch ( '{foo/bar,baz/qux}', 'foo/', { partial: true } ) );
+    t.true ( isMatch ( '{foo/bar,baz/qux}', 'baz', { partial: true } ) );
+    t.true ( isMatch ( '{foo/bar,baz/qux}', 'baz/', { partial: true } ) );
+    t.false ( isMatch ( '{foo/bar,baz/qux}', 'foo/qux', { partial: true } ) );
+    t.false ( isMatch ( '{foo/bar,baz/qux}', 'baz/bar', { partial: true } ) );
+
+  });
+
   it ( 'native_memoization', t => {
 
     const glob = 'foo';
@@ -136,6 +204,134 @@ describe ( 'Zeptomatch', it => {
     t.is ( re5, re6 );
     t.is ( re7, re8 );
     t.not ( re5, re8 );
+
+  });
+
+  it ( 'native_partial_0', t => {
+
+    const glob = '/*/b/x/y/z';
+
+    t.true ( isMatch ( glob, '/a/b', { partial: true } ) );
+    t.false ( isMatch ( glob, '/a/b' ) );
+    t.false ( isMatch ( glob, '/a/b/c', { partial: true } ) );
+
+  });
+
+  it ( 'native_partial_1', t => {
+
+    const glob = 'foo/**/{bar/baz,qux}/*.js';
+
+    // Partial
+
+    t.true ( isMatch ( glob, '', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/', { partial: true } ) );
+
+    t.true ( isMatch ( glob, 'foo/bar', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/bar/', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux/', { partial: true } ) );
+
+    t.true ( isMatch ( glob, 'foo/bar_', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/bar_', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/bar/_', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux_', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux/_', { partial: true } ) );
+
+    // Full
+
+    t.false ( isMatch ( glob, '' ) );
+    t.false ( isMatch ( glob, 'foo' ) );
+    t.false ( isMatch ( glob, 'foo/' ) );
+
+    t.false ( isMatch ( glob, 'foo/bar' ) );
+    t.false ( isMatch ( glob, 'foo/bar/' ) );
+    t.false ( isMatch ( glob, 'foo/qux' ) );
+    t.false ( isMatch ( glob, 'foo/qux/' ) );
+
+    t.false ( isMatch ( glob, 'foo/bar_' ) );
+    t.false ( isMatch ( glob, 'foo/bar/_' ) );
+    t.false ( isMatch ( glob, 'foo/qux_' ) );
+    t.false ( isMatch ( glob, 'foo/qux/_' ) );
+
+  });
+
+  it ( 'native_partial_2', t => {
+
+    const glob = 'foo/*/{bar/baz,qux}/*.js';
+
+    // Partial
+
+    t.true ( isMatch ( glob, '', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/', { partial: true } ) );
+
+    t.true ( isMatch ( glob, 'foo/bar', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/bar/', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux/', { partial: true } ) );
+
+    t.true ( isMatch ( glob, 'foo/bar_', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/bar_', { partial: true } ) );
+    t.false ( isMatch ( glob, 'foo/bar/_', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux_', { partial: true } ) );
+    t.false ( isMatch ( glob, 'foo/qux/_', { partial: true } ) );
+
+    // Full
+
+    t.false ( isMatch ( glob, '' ) );
+    t.false ( isMatch ( glob, 'foo' ) );
+    t.false ( isMatch ( glob, 'foo/' ) );
+
+    t.false ( isMatch ( glob, 'foo/bar' ) );
+    t.false ( isMatch ( glob, 'foo/bar/' ) );
+    t.false ( isMatch ( glob, 'foo/qux' ) );
+    t.false ( isMatch ( glob, 'foo/qux/' ) );
+
+    t.false ( isMatch ( glob, 'foo/bar_' ) );
+    t.false ( isMatch ( glob, 'foo/bar/_' ) );
+    t.false ( isMatch ( glob, 'foo/qux_' ) );
+    t.false ( isMatch ( glob, 'foo/qux/_' ) );
+
+  });
+
+  it ( 'native_partial_3', t => {
+
+    const glob = 'foo/{bar/baz,qux}/*.js';
+
+    // Partial
+
+    t.true ( isMatch ( glob, '', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/', { partial: true } ) );
+
+    t.true ( isMatch ( glob, 'foo/bar', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/bar/', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux/', { partial: true } ) );
+
+    t.false ( isMatch ( glob, 'foo/bar_', { partial: true } ) );
+    t.false ( isMatch ( glob, 'foo/bar_', { partial: true } ) );
+    t.false ( isMatch ( glob, 'foo/bar/_', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/bar/baz/_', { partial: true } ) ); //FIXME: False positive, due to this being token-based rather than path segment-based
+    t.false ( isMatch ( glob, 'foo/qux_', { partial: true } ) );
+    t.true ( isMatch ( glob, 'foo/qux/_', { partial: true } ) ); //FIXME: False positive, due to this being token-based rather than path segment-based
+
+    // Full
+
+    t.false ( isMatch ( glob, '' ) );
+    t.false ( isMatch ( glob, 'foo' ) );
+    t.false ( isMatch ( glob, 'foo/' ) );
+
+    t.false ( isMatch ( glob, 'foo/bar' ) );
+    t.false ( isMatch ( glob, 'foo/bar/' ) );
+    t.false ( isMatch ( glob, 'foo/qux' ) );
+    t.false ( isMatch ( glob, 'foo/qux/' ) );
+
+    t.false ( isMatch ( glob, 'foo/bar_' ) );
+    t.false ( isMatch ( glob, 'foo/bar/_' ) );
+    t.false ( isMatch ( glob, 'foo/qux_' ) );
+    t.false ( isMatch ( glob, 'foo/qux/_' ) );
 
   });
 
