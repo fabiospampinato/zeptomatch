@@ -189,6 +189,17 @@ describe ( 'Zeptomatch', it => {
 
   });
 
+  it ( 'native_trailing slash', t => {
+
+    t.true ( isMatch ( 'foo', 'foo' ) );
+    t.true ( isMatch ( 'foo', 'foo/' ) );
+
+    t.false ( isMatch ( 'foo/', 'foo' ) );
+    t.true ( isMatch ( 'foo/', 'foo/' ) );
+    t.true ( isMatch ( 'foo/', 'foo//' ) );
+
+  });
+
   // Tests adapted from "picomatch": https://github.com/micromatch/picomatch
   // License: https://github.com/micromatch/picomatch/blob/master/LICENSE
 
