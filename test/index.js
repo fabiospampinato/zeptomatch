@@ -45,6 +45,73 @@ describe ( 'Zeptomatch', it => {
 
   });
 
+  it ( 'native_grammar', t => {
+
+    // Escaped
+    t.true ( isMatch ( '\\n', '\n' ) );
+    t.true ( isMatch ( '\\(', '(' ) );
+    // Escape
+    t.true ( isMatch ( '(', '(' ) );
+    // Slash
+    t.true ( isMatch ( '/', '/' ) );
+    t.true ( isMatch ( '/', '\\' ) );
+    t.true ( isMatch ( '\\', '/' ) );
+    t.true ( isMatch ( '\\', '\\' ) );
+    // Passthrough
+    t.true ( isMatch ( 'abc', 'abc' ) );
+
+    // Negation
+    //TODO
+
+    // StarStar
+    t.true ( isMatch ( '**', 'foo/bar' ) );
+
+    // Star
+    t.true ( isMatch ( '*', 'abc' ) );
+    t.true ( isMatch ( '*.js', 'abc.js' ) );
+
+    // Question
+    t.true ( isMatch ( '?', 'a' ) );
+    t.false ( isMatch ( '?', '' ) );
+    t.false ( isMatch ( '?', '/' ) );
+    t.false ( isMatch ( '?', '\\' ) );
+
+    // Class
+    t.true ( isMatch ( '[a-z]', 'a' ) );
+    t.true ( isMatch ( '[A-Z]', 'A' ) );
+    t.true ( isMatch ( '[a-zA-Z]', 'a' ) );
+    t.true ( isMatch ( '[a-zA-Z]', 'A' ) );
+    t.true ( isMatch ( '[0-9]', '0' ) );
+    t.true ( isMatch ( '[a-z][0-9]', 'a0' ) );
+    t.true ( isMatch ( '[^a-z][^0-9]', '0a' ) );
+    t.false ( isMatch ( '[a-z]', 'A' ) );
+    t.false ( isMatch ( '[A-Z]', 'a' ) );
+
+    // Range
+    t.true ( isMatch ( '{1..9}', '1' ) );
+    t.true ( isMatch ( '{a..z}', 'a' ) );
+    t.true ( isMatch ( '{A..Z}', 'A' ) );
+    t.true ( isMatch ( '{A..Z}{1..9}', 'A1' ) );
+    t.true ( isMatch ( '{1..9}{A..Z}', '1A' ) );
+    t.false ( isMatch ( '{a..z}', 'A' ) );
+    t.false ( isMatch ( '{A..Z}', 'a' ) );
+
+    // Braces
+    t.true ( isMatch ( '{foo,bar}', 'foo' ) );
+    t.true ( isMatch ( '{foo,bar}', 'bar' ) );
+    t.true ( isMatch ( '{}', '' ) );
+    t.true ( isMatch ( '{,}', '' ) );
+    t.true ( isMatch ( '{,foo}', '' ) );
+    t.true ( isMatch ( '{,foo}', 'foo' ) );
+    t.false ( isMatch ( '{foo,bar}', '' ) );
+    t.false ( isMatch ( '{foo,bar}', 'foobar' ) );
+    t.true ( isMatch ( '{foo/bar,baz/qux}', 'foo/bar' ) );
+    t.true ( isMatch ( '{foo/bar,baz/qux}', 'baz/qux' ) );
+    t.false ( isMatch ( '{foo/bar,baz/qux}', 'foo/qux' ) );
+    t.false ( isMatch ( '{foo/bar,baz/qux}', 'baz/bar' ) );
+
+  });
+
   it ( 'native_range', t => {
 
     // Numeric
