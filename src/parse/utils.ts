@@ -5,9 +5,9 @@ import type {Node} from '../types';
 
 /* MAIN */
 
-const regex = ( source: string ): Node => { // A single node
+const regex = ( source: string ): Node => { // A single node, never matching partially
   const regex = new RegExp ( source, 's' );
-  return { regex, children: [] };
+  return { partial: false, regex, children: [] };
 };
 
 const alternation = ( children: Node[] ): Node => { // A list of nodes
@@ -46,8 +46,9 @@ const sequence = (() => { // A tree of nodes
 
 })();
 
-const slash = (): Node => { // A single node matching a slash
-  return regex ( '[\\\\/]' );
+const slash = (): Node => { // A single node matching a slash, potentially matching partially
+  const regex = new RegExp ( '[\\\\/]', 's' );
+  return { regex, children: [] };
 };
 
 /* EXPORT */

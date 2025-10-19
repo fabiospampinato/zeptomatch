@@ -2,6 +2,7 @@
 /* MAIN */
 
 type Node = {
+  partial?: boolean,
   regex?: RegExp,
   children: Node[]
 };

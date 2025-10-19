@@ -120,15 +120,15 @@ describe ( 'Zeptomatch', it => {
   it ( 'native_grammar_partial', t => {
 
     // Escaped
-    t.true ( isMatch ( '\\n\\n', '\n', { partial: true } ) );
-    t.true ( isMatch ( '\\(\\(', '(', { partial: true } ) );
+    t.false ( isMatch ( '\\n\\n', '\n', { partial: true } ) );
+    t.false ( isMatch ( '\\(\\(', '(', { partial: true } ) );
     // Escape
-    t.true ( isMatch ( '((', '(', { partial: true } ) );
+    t.false ( isMatch ( '((', '(', { partial: true } ) );
     // Slash
     t.true ( isMatch ( '//', '/', { partial: true } ) );
     t.true ( isMatch ( '//', '\\', { partial: true } ) );
     // Passthrough
-    t.true ( isMatch ( 'abc', '', { partial: true } ) );
+    t.false ( isMatch ( 'abc', '', { partial: true } ) );
     t.false ( isMatch ( 'abc', 'a', { partial: true } ) );
     t.false ( isMatch ( 'abc', 'ab', { partial: true } ) );
     t.true ( isMatch ( 'abc', 'abc', { partial: true } ) );
@@ -147,32 +147,33 @@ describe ( 'Zeptomatch', it => {
     t.true ( isMatch ( '*', '', { partial: true } ) );
     t.true ( isMatch ( '*', 'abc', { partial: true } ) );
     t.true ( isMatch ( '*.js', 'abc.js', { partial: true } ) );
+    t.false ( isMatch ( '*.js', 'abc', { partial: true } ) );
 
     // Question
-    t.true ( isMatch ( 'a?b', 'a', { partial: true } ) );
-    t.true ( isMatch ( 'a?b', 'ab', { partial: true } ) );
+    t.false ( isMatch ( 'a?b', 'a', { partial: true } ) );
+    t.false ( isMatch ( 'a?b', 'ab', { partial: true } ) );
     t.true ( isMatch ( 'a?b', 'abb', { partial: true } ) );
     t.false ( isMatch ( 'a?b', 'abc', { partial: true } ) );
 
     // Class
-    t.true ( isMatch ( '[a-z][a-z]', 'a', { partial: true } ) );
-    t.true ( isMatch ( '[A-Z][A-Z]', 'A', { partial: true } ) );
-    t.true ( isMatch ( '[a-zA-Z][a-zA-Z]', 'a', { partial: true } ) );
-    t.true ( isMatch ( '[a-zA-Z][a-zA-Z]', 'A', { partial: true } ) );
-    t.true ( isMatch ( '[0-9][0-9]', '0', { partial: true } ) );
-    t.true ( isMatch ( '[a-z][0-9][a-z][0-9]', 'a0', { partial: true } ) );
-    t.true ( isMatch ( '[^a-z][^0-9][^a-z][^0-9]', '0a', { partial: true } ) );
+    t.false ( isMatch ( '[a-z][a-z]', 'a', { partial: true } ) );
+    t.false ( isMatch ( '[A-Z][A-Z]', 'A', { partial: true } ) );
+    t.false ( isMatch ( '[a-zA-Z][a-zA-Z]', 'a', { partial: true } ) );
+    t.false ( isMatch ( '[a-zA-Z][a-zA-Z]', 'A', { partial: true } ) );
+    t.false ( isMatch ( '[0-9][0-9]', '0', { partial: true } ) );
+    t.false ( isMatch ( '[a-z][0-9][a-z][0-9]', 'a0', { partial: true } ) );
+    t.false ( isMatch ( '[^a-z][^0-9][^a-z][^0-9]', '0a', { partial: true } ) );
 
     // Range
-    t.true ( isMatch ( '{1..9}{1..9}', '1', { partial: true } ) );
-    t.true ( isMatch ( '{a..z}{a..z}', 'a', { partial: true } ) );
-    t.true ( isMatch ( '{A..Z}{A..Z}', 'A', { partial: true } ) );
-    t.true ( isMatch ( '{A..Z}{1..9}{A..Z}{1..9}', 'A1', { partial: true } ) );
-    t.true ( isMatch ( '{1..9}{A..Z}{1..9}{A..Z}', '1A', { partial: true } ) );
+    t.false ( isMatch ( '{1..9}{1..9}', '1', { partial: true } ) );
+    t.false ( isMatch ( '{a..z}{a..z}', 'a', { partial: true } ) );
+    t.false ( isMatch ( '{A..Z}{A..Z}', 'A', { partial: true } ) );
+    t.false ( isMatch ( '{A..Z}{1..9}{A..Z}{1..9}', 'A1', { partial: true } ) );
+    t.false ( isMatch ( '{1..9}{A..Z}{1..9}{A..Z}', '1A', { partial: true } ) );
 
     // Braces
-    t.true ( isMatch ( '{foo,bar}baz', 'foo', { partial: true } ) );
-    t.true ( isMatch ( '{foo,bar}baz', 'bar', { partial: true } ) );
+    t.false ( isMatch ( '{foo,bar}baz', 'foo', { partial: true } ) );
+    t.false ( isMatch ( '{foo,bar}baz', 'bar', { partial: true } ) );
     t.false ( isMatch ( '{foo,bar}baz', 'f', { partial: true } ) );
     t.false ( isMatch ( '{foo,bar}baz', 'b', { partial: true } ) );
 
@@ -223,7 +224,7 @@ describe ( 'Zeptomatch', it => {
 
     // Partial
 
-    t.true ( isMatch ( glob, '', { partial: true } ) );
+    t.false ( isMatch ( glob, '', { partial: true } ) );
     t.true ( isMatch ( glob, 'foo', { partial: true } ) );
     t.true ( isMatch ( glob, 'foo/', { partial: true } ) );
 
@@ -262,7 +263,7 @@ describe ( 'Zeptomatch', it => {
 
     // Partial
 
-    t.true ( isMatch ( glob, '', { partial: true } ) );
+    t.false ( isMatch ( glob, '', { partial: true } ) );
     t.true ( isMatch ( glob, 'foo', { partial: true } ) );
     t.true ( isMatch ( glob, 'foo/', { partial: true } ) );
 
@@ -301,7 +302,7 @@ describe ( 'Zeptomatch', it => {
 
     // Partial
 
-    t.true ( isMatch ( glob, '', { partial: true } ) );
+    t.false ( isMatch ( glob, '', { partial: true } ) );
     t.true ( isMatch ( glob, 'foo', { partial: true } ) );
     t.true ( isMatch ( glob, 'foo/', { partial: true } ) );
 
@@ -313,9 +314,9 @@ describe ( 'Zeptomatch', it => {
     t.false ( isMatch ( glob, 'foo/bar_', { partial: true } ) );
     t.false ( isMatch ( glob, 'foo/bar_', { partial: true } ) );
     t.false ( isMatch ( glob, 'foo/bar/_', { partial: true } ) );
-    t.true ( isMatch ( glob, 'foo/bar/baz/_', { partial: true } ) ); //FIXME: False positive, due to this being token-based rather than path segment-based
+    t.false ( isMatch ( glob, 'foo/bar/baz/_', { partial: true } ) );
     t.false ( isMatch ( glob, 'foo/qux_', { partial: true } ) );
-    t.true ( isMatch ( glob, 'foo/qux/_', { partial: true } ) ); //FIXME: False positive, due to this being token-based rather than path segment-based
+    t.false ( isMatch ( glob, 'foo/qux/_', { partial: true } ) );
 
     // Full
 
