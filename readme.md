@@ -27,7 +27,7 @@ Additional features and details:
 - Zeptomatch works pretty similarly to [`picomatch`](https://github.com/micromatch/picomatch), since 1000+ of its tests are being used by this library.
 - Zeptomatch is opinionated, there are barely any options, which helps with keeping it tiny and manageable.
 - Zeptomatch is automatically memoized, the only ways to use it are always the most optimized ones available.
-- Zeptomatch automatically normalizes path separators, since matching Windows-style paths would most likely be a mistake.
+- Zeptomatch automatically normalizes path separators, both `/` and `\` mean the same thing.
 - Zeptomatch supports compiling a glob to a standalone regular expression.
 - Zeptomatch supports compiling multiple globs to a standalone regular expression too.
 - Zeptomatch doesn't do anything special for file names starting with a dot.
