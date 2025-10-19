@@ -1,8 +1,7 @@
 
 /* IMPORT */
 
-import {parse} from 'grammex';
-import type {ExplicitRule} from 'grammex';
+import type {Options} from './types';
 
 /* MAIN */
 
@@ -12,23 +11,44 @@ const identity = <T> ( value: T ): T => {
 
 };
 
-const makeParser = ( grammar: ExplicitRule<string> ) => {
+const isString = ( value: unknown ): value is string => {
 
-  return ( input: string ): string => {
+  return typeof value === 'string';
 
-    return parse ( input, grammar, { memoization: false } ).join ( '' );
+};
+
+const memoizeByObject = <T> ( fn: ( globs: string[], options?: Options ) => T ) => {
+
+  const cacheFull = new WeakMap<string[], T>();
+  const cachePartial = new WeakMap<string[], T>();
+
+  return ( globs: string[], options?: Options ): T => {
+
+    const cache = options?.partial ? cachePartial : cacheFull;
+    const cached = cache.get ( globs );
+
+    if ( cached !== undefined ) return cached;
+
+    const result = fn ( globs, options );
+
+    cache.set ( globs, result );
+
+    return result;
 
   };
 
 };
 
-const memoize = <T> ( fn: ( arg: string ) => T ): (( arg: string ) => T) => {
+const memoizeByPrimitive = <T> ( fn: ( glob: string, options?: Options ) => T ) => {
 
-  const cache: Record<string, T> = {};
+  const cacheFull: Record<string, T> = {};
+  const cachePartial: Record<string, T> = {};
 
-  return ( arg: string ): T => {
+  return ( glob: string, options?: Options ): T => {
 
-    return cache[arg] ??= fn ( arg );
+    const cache = options?.partial ? cachePartial : cacheFull;
+
+    return cache[glob] ??= fn ( glob, options );
 
   };
 
@@ -36,4 +56,4 @@ const memoize = <T> ( fn: ( arg: string ) => T ): (( arg: string ) => T) => {
 
 /* EXPORT */
 
-export {identity, makeParser, memoize};
+export {identity, isString, memoizeByObject, memoizeByPrimitive};

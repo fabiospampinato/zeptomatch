@@ -1,40 +1,44 @@
 
 /* IMPORT */
 
-import convert from './convert/parser';
-import normalize from './normalize/parser';
-import {memoize} from './utils';
+import type {Options} from './types';
+import compile from './compile';
+import merge from './merge';
+import normalize from './normalize';
+import parse from './convert'; //TODO: rename this
+import {isString, memoizeByObject, memoizeByPrimitive} from './utils';
 
 /* MAIN */
 
-const zeptomatch = ( glob: string | string[], path: string ): boolean => {
+const zeptomatch = ( glob: string | string[], path: string, options?: Options ): boolean => {
 
-  if ( Array.isArray ( glob ) ) {
-
-    const res = glob.map ( zeptomatch.compile );
-    const isMatch = res.some ( re => re.test ( path ) );
-
-    return isMatch;
-
-  } else {
-
-    const re = zeptomatch.compile ( glob );
-    const isMatch = re.test ( path );
-
-    return isMatch;
-
-  }
+  return zeptomatch.compile ( glob, options ).test ( path );
 
 };
 
 /* UTILITIES */
 
-zeptomatch.compile = memoize (( glob: string ): RegExp => {
+zeptomatch.compile = (() => {
 
-  return new RegExp ( `^${convert ( normalize ( glob ) )}[\\\\/]?$`, 's' );
+  const compileGlob = memoizeByPrimitive (( glob: string, options?: Options ): RegExp => {
+    return compile ( parse ( normalize ( glob ) ), options );
+  });
 
-});
+  const compileGlobs = memoizeByObject (( globs: string[], options?: Options ): RegExp => {
+    return merge ( globs.map ( glob => compileGlob ( glob, options ) ) );
+  });
+
+  return ( glob: string | string[], options?: Options ): RegExp => {
+    if ( isString ( glob ) ) {
+      return compileGlob ( glob, options );
+    } else {
+      return compileGlobs ( glob, options );
+    }
+  };
+
+})();
 
 /* EXPORT */
 
 export default zeptomatch;
+export type {Options};
