@@ -72,7 +72,7 @@ const fullRe = zeptomatch.compile ( 'src/*.js' ); // => /^(?:src[\\/][^\\/]*\.js
 
 // Let's compile a glob to a regular expression that matches partially
 
-const partialRe = zeptomatch.compile ( '*.js', { partial: true } ); // => /^(?:src(?:$|[\\/](?:$|[^\\/]*\.js)))[\\/]?$/s
+const partialRe = zeptomatch.compile ( 'src/*.js', { partial: true } ); // => /^(?:src(?:$|[\\/](?:$|[^\\/]*\.js)))[\\/]?$/s
 ```
 
 ## Utilities
