@@ -5,7 +5,7 @@ import type {Options} from './types';
 import compile from './compile';
 import merge from './merge';
 import normalize from './normalize';
-import parse from './convert'; //TODO: rename this
+import parse from './parse';
 import {isString, memoizeByObject, memoizeByPrimitive} from './utils';
 
 /* MAIN */
