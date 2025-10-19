@@ -66,7 +66,10 @@ describe ( 'Zeptomatch', it => {
     t.true ( isMatch ( 'abc', 'abc' ) );
 
     // Negation
-    //TODO
+    t.true ( isMatch ( '!foo', 'bar' ) );
+    t.false ( isMatch ( '!foo', 'foo' ) );
+    t.true ( isMatch ( '!!foo', 'foo' ) );
+    t.false ( isMatch ( '!!!foo', 'foo' ) );
 
     // StarStar
     t.true ( isMatch ( '**', 'foo/bar' ) );
@@ -134,7 +137,10 @@ describe ( 'Zeptomatch', it => {
     t.true ( isMatch ( 'abc', 'abc', { partial: true } ) );
 
     // Negation
-    // //TODO
+    t.true ( isMatch ( '!foo/bar', 'bar', { partial: true } ) );
+    t.false ( isMatch ( '!foo', 'foo', { partial: true } ) );
+    t.true ( isMatch ( '!!foo', 'foo', { partial: true } ) );
+    t.false ( isMatch ( '!!!foo', 'foo', { partial: true } ) );
 
     // StarStar
     t.true ( isMatch ( '**', '', { partial: true } ) );
@@ -677,8 +683,8 @@ describe ( 'Zeptomatch', it => {
   it ( 'exploits', t => {
 
     t.true ( !isMatch ( `${'\\'.repeat ( 65500 )}A`, '\\A' ) ); // This matches in picomatch, but why though?
-    // t.true ( isMatch ( `!${'\\'.repeat ( 65500 )}A`, 'A' ) );
-    // t.true ( isMatch ( `!(${'\\'.repeat ( 65500 )}A)`, 'A' ) );
+    t.true ( isMatch ( `!${'\\'.repeat ( 65500 )}A`, 'A' ) );
+    t.true ( isMatch ( `!(${'\\'.repeat ( 65500 )}A)`, 'A' ) );
     t.true ( !isMatch ( `[!(${'\\'.repeat ( 65500 )}A`, 'A' ) );
 
   });
@@ -2692,7 +2698,7 @@ describe ( 'Zeptomatch', it => {
 
   });
 
-  it.skip ( 'negation', t => {
+  it ( 'negation', t => {
 
     t.true ( !isMatch ( "!*", "abc" ) );
     t.true ( !isMatch ( "!abc", "abc" ) );

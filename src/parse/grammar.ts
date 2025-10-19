@@ -4,7 +4,7 @@
 import {match, and, lazy, optional, plus, or, star} from 'grammex';
 import {makeRangeAlpha, makeRangePaddedInt} from '../range';
 import {identity} from '../utils';
-// import zeptomatch from '..';
+import zeptomatch from '..';
 import {regex, alternation, sequence, slash} from './utils';
 
 /* MAIN */
@@ -14,9 +14,9 @@ const Escape = match ( /[$.*+?^(){}[\]\|]/, char => regex ( `\\${char}` ) );
 const Slash = match ( /[\\\/]/, slash );
 const Passthrough = match ( /[^$.*+?^(){}[\]\|\\\/]+/, regex );
 
-// const NegationOdd = match ( /^(?:!!)*!(.*)$/, ( _, glob ) => regex ( `(?!^${zeptomatch.compile ( glob )}$).*?` ) );
-// const NegationEven = match ( /^(!!)+/ );
-// const Negation = or ([ NegationOdd, NegationEven ]);
+const NegationOdd = match ( /^(?:!!)*!(.*)$/, ( _, glob ) => regex ( `(?!^${zeptomatch.compile ( glob ).source}$).*?` ) );
+const NegationEven = match ( /^(!!)+/ );
+const Negation = or ([ NegationOdd, NegationEven ]);
 
 const StarStarBetween = match ( /\/(\*\*\/)+/, () => alternation ([ sequence ([ slash (), regex ( '.+?' ), slash () ]), slash () ]) );
 const StarStarStart = match ( /^(\*\*\/)+/, () => alternation ([ regex ( '^' ), sequence ([ regex ( '.*?' ), slash () ]) ]) );
@@ -62,7 +62,7 @@ const BracesFullValue = plus ( or ([ StarStar, Star, Question, Class, Range, Bra
 const BracesValue = or ([ BracesFullValue, BracesEmptyValue ]);
 const Braces = and ( [BracesOpen, optional ( and ([ BracesValue, star ( and ([ BracesComma, BracesValue ]) ) ]) ), BracesClose], alternation );
 
-const Grammar = star ( or ([ /* Negation, */ StarStar, Star, Question, Class, Range, Braces, Escaped, Escape, Slash, Passthrough ]), sequence );
+const Grammar = star ( or ([ Negation, StarStar, Star, Question, Class, Range, Braces, Escaped, Escape, Slash, Passthrough ]), sequence );
 
 /* EXPORT */
 
